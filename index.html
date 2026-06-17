@@ -1,0 +1,2262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>EnglishPro - 英语学习助手</title>
+
+<!-- PWA 配置 -->
+<meta name="theme-color" content="#6366f1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EnglishPro">
+<meta name="application-name" content="EnglishPro">
+<meta name="msapplication-TileColor" content="#6366f1">
+<meta name="msapplication-navbutton-color" content="#6366f1">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-96x96.png">
+
+<!-- 启动画面样式 -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+  :root {
+    --primary: #6366f1;
+    --primary-light: #818cf8;
+    --primary-dark: #4f46e5;
+    --accent: #f59e0b;
+    --success: #10b981;
+    --danger: #ef4444;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #1e293b;
+    --text-secondary: #64748b;
+    --border: #e2e8f0;
+    --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  
+  /* ========== 登录页 ========== */
+  .auth-overlay { position:fixed; inset:0; z-index:9999; background:linear-gradient(135deg,#eef2ff 0%,#e0e7ff 40%,#c7d2fe 100%); display:flex; align-items:center; justify-content:center; transition:opacity 0.4s,visibility 0.4s; }
+  .auth-overlay.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+  .auth-card { background:var(--card); border-radius:24px; padding:40px 36px; width:400px; max-width:92vw; box-shadow:0 20px 60px rgba(99,102,241,0.15); text-align:center; }
+  .auth-logo { font-size:3.2rem; margin-bottom:8px; }
+  .auth-title { font-size:1.6rem; font-weight:800; color:var(--primary); margin-bottom:4px; }
+  .auth-subtitle { font-size:0.9rem; color:var(--text-secondary); margin-bottom:24px; }
+  .auth-tabs { display:flex; margin-bottom:20px; border-radius:10px; overflow:hidden; border:2px solid var(--border); }
+  .auth-tab { flex:1; padding:10px; border:none; background:var(--card); font-size:0.95rem; font-weight:600; cursor:pointer; color:var(--text-secondary); transition:all 0.2s; }
+  .auth-tab.active { background:var(--primary); color:white; }
+  .auth-form { display:none; }
+  .auth-form.active { display:block; }
+  .auth-input-group { margin-bottom:14px; text-align:left; }
+  .auth-label { display:block; font-size:0.85rem; font-weight:600; margin-bottom:4px; color:var(--text); }
+  .auth-input { width:100%; padding:12px 14px; border:2px solid var(--border); border-radius:10px; font-size:0.95rem; transition:border-color 0.2s; outline:none; }
+  .auth-input:focus { border-color:var(--primary); }
+  .auth-input.error { border-color:var(--danger); }
+  .auth-remember { display:flex; align-items:center; gap:6px; margin-bottom:16px; font-size:0.85rem; color:var(--text-secondary); }
+  .auth-remember input[type="checkbox"] { accent-color:var(--primary); width:16px; height:16px; }
+  .auth-btn { width:100%; padding:13px; border:none; border-radius:10px; font-size:1rem; font-weight:700; cursor:pointer; transition:all 0.2s; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:white; box-shadow:0 4px 14px rgba(99,102,241,0.3); }
+  .auth-btn:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(99,102,241,0.4); }
+  .auth-btn:active { transform:translateY(0); }
+  .auth-error { background:#fef2f2; color:var(--danger); padding:8px 12px; border-radius:8px; font-size:0.85rem; margin-bottom:12px; display:none; }
+  .auth-error.show { display:block; }
+  .auth-success { background:#ecfdf5; color:var(--success); padding:8px 12px; border-radius:8px; font-size:0.85rem; margin-bottom:12px; display:none; }
+  .auth-success.show { display:block; }
+  .auth-divider { display:flex; align-items:center; gap:12px; margin:16px 0; color:var(--text-secondary); font-size:0.85rem; }
+  .auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+  .auth-guest { width:100%; padding:11px; border:2px solid var(--border); border-radius:10px; background:transparent; font-size:0.9rem; color:var(--text-secondary); cursor:pointer; transition:all 0.2s; font-weight:600; }
+  .auth-guest:hover { border-color:var(--primary); color:var(--primary); }
+  .password-wrapper { position:relative; }
+  .password-toggle { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; font-size:1.1rem; cursor:pointer; color:var(--text-secondary); }
+  .password-strength { height:4px; border-radius:2px; margin-top:6px; background:var(--border); overflow:hidden; }
+  .password-strength-bar { height:100%; border-radius:2px; transition:width 0.3s,background 0.3s; }
+  
+  /* 用户菜单 */
+  .user-menu { display:flex; align-items:center; gap:10px; }
+  .user-avatar { width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,0.3); display:flex; align-items:center; justify-content:center; font-size:1rem; font-weight:700; }
+  .user-name { font-size:0.9rem; font-weight:600; max-width:80px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .user-dropdown-btn { background:rgba(255,255,255,0.2); border:none; color:white; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:0.8rem; }
+  .user-dropdown-btn:hover { background:rgba(255,255,255,0.3); }
+  
+  /* 用户下拉面板 */
+  .user-dropdown { position:absolute; top:100%; right:16px; background:var(--card); border-radius:12px; box-shadow:var(--shadow-lg); min-width:200px; z-index:200; display:none; overflow:hidden; border:1px solid var(--border); }
+  .user-dropdown.show { display:block; }
+  .user-dropdown-header { padding:14px 16px; background:linear-gradient(135deg,#eef2ff,#e0e7ff); border-bottom:1px solid var(--border); }
+  .user-dropdown-header .ud-name { font-weight:700; color:var(--text); }
+  .user-dropdown-header .ud-email { font-size:0.8rem; color:var(--text-secondary); }
+  .user-dropdown-item { display:flex; align-items:center; gap:10px; padding:12px 16px; cursor:pointer; transition:background 0.15s; font-size:0.9rem; color:var(--text); }
+  .user-dropdown-item:hover { background:#f1f5f9; }
+  .user-dropdown-item.danger { color:var(--danger); }
+  .user-dropdown-divider { height:1px; background:var(--border); }
+  
+  /* ========== 启动画面 ========== */
+  .splash-screen { position:fixed; inset:0; z-index:99999; background:linear-gradient(135deg,#6366f1,#4f46e5); display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.5s,visibility 0.5s; }
+  .splash-screen.hide { opacity:0; visibility:hidden; pointer-events:none; }
+  .splash-logo { font-size:5rem; animation:splashBounce 1s ease-in-out infinite alternate; }
+  @keyframes splashBounce { from{transform:scale(1)} to{transform:scale(1.1)} }
+  .splash-title { color:white; font-size:2rem; font-weight:800; margin-top:12px; }
+  .splash-sub { color:rgba(255,255,255,0.7); font-size:0.9rem; margin-top:8px; }
+  .splash-loader { width:120px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; margin-top:32px; overflow:hidden; }
+  .splash-loader-bar { height:100%; background:white; border-radius:2px; animation:splashLoad 1.5s ease-in-out; }
+  @keyframes splashLoad { from{width:0} to{width:100%} }
+  
+  /* ========== PWA 安装提示 ========== */
+  .install-banner { position:fixed; bottom:0; left:0; right:0; z-index:500; background:var(--card); box-shadow:0 -4px 20px rgba(0,0,0,0.15); padding:16px 20px; display:none; align-items:center; gap:12px; animation:slideUp 0.3s ease-out; border-top:2px solid var(--primary); }
+  .install-banner.show { display:flex; }
+  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+  .install-icon { font-size:2.5rem; }
+  .install-info { flex:1; }
+  .install-info .install-title { font-weight:700; font-size:0.95rem; }
+  .install-info .install-desc { font-size:0.8rem; color:var(--text-secondary); }
+  .install-btn { padding:10px 20px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9rem; white-space:nowrap; }
+  .install-close { background:none; border:none; font-size:1.4rem; color:var(--text-secondary); cursor:pointer; padding:4px; }
+  
+  /* ========== 学习计划 ========== */
+  .plan-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .plan-header h3 { font-size:1.05rem; }
+  .plan-toggle { display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text-secondary); }
+  .toggle-switch { position:relative; width:44px; height:24px; background:var(--border); border-radius:12px; cursor:pointer; transition:background 0.2s; }
+  .toggle-switch.active { background:var(--primary); }
+  .toggle-switch::after { content:''; position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:white; transition:transform 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+  .toggle-switch.active::after { transform:translateX(20px); }
+  
+  .goal-card { background:var(--card); border:2px solid var(--border); border-radius:14px; padding:16px; margin-bottom:12px; transition:all 0.2s; }
+  .goal-card.completed { border-color:var(--success); background:#f0fdf4; }
+  .goal-card.in-progress { border-color:var(--primary); background:#f8faff; }
+  .goal-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .goal-icon { font-size:1.5rem; }
+  .goal-title { font-weight:700; font-size:0.95rem; }
+  .goal-status-badge { font-size:0.75rem; padding:3px 8px; border-radius:10px; font-weight:600; }
+  .goal-status-badge.done { background:#dcfce7; color:#16a34a; }
+  .goal-status-badge.active { background:#eef2ff; color:var(--primary); }
+  .goal-status-badge.pending { background:#f1f5f9; color:var(--text-secondary); }
+  .goal-status-badge.skipped { background:#fef2f2; color:var(--danger); }
+  .goal-detail { font-size:0.85rem; color:var(--text-secondary); margin-bottom:10px; }
+  .goal-progress { height:8px; background:var(--border); border-radius:4px; overflow:hidden; margin-bottom:8px; }
+  .goal-progress-fill { height:100%; border-radius:4px; transition:width 0.4s; }
+  .goal-progress-fill.gp-primary { background:linear-gradient(90deg,var(--primary),var(--primary-light)); }
+  .goal-progress-fill.gp-success { background:linear-gradient(90deg,var(--success),#34d399); }
+  .goal-progress-fill.gp-accent { background:linear-gradient(90deg,var(--accent),#fbbf24); }
+  .goal-stats { display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-secondary); margin-bottom:10px; }
+  .goal-actions { display:flex; gap:8px; }
+  .goal-actions .btn { padding:6px 12px; font-size:0.8rem; }
+  .goal-adjust { display:flex; align-items:center; gap:8px; margin-top:8px; }
+  .goal-adjust label { font-size:0.85rem; color:var(--text-secondary); white-space:nowrap; }
+  .goal-adjust input[type="range"] { flex:1; accent-color:var(--primary); }
+  .goal-adjust .goal-value { font-weight:700; font-size:0.9rem; color:var(--primary); min-width:28px; text-align:center; }
+  
+  .plan-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+  .plan-sum-item { text-align:center; padding:12px 8px; border-radius:12px; background:#f8fafc; border:1px solid var(--border); }
+  .plan-sum-num { font-size:1.6rem; font-weight:800; }
+  .plan-sum-num.psn-primary { color:var(--primary); }
+  .plan-sum-num.psn-success { color:var(--success); }
+  .plan-sum-num.psn-accent { color:var(--accent); }
+  .plan-sum-label { font-size:0.75rem; color:var(--text-secondary); margin-top:2px; }
+  
+  .plan-timeline { padding:0 8px; margin-bottom:16px; }
+  .timeline-item { display:flex; gap:12px; padding-bottom:16px; position:relative; }
+  .timeline-item::before { content:''; position:absolute; left:15px; top:32px; bottom:0; width:2px; background:var(--border); }
+  .timeline-item:last-child::before { display:none; }
+  .timeline-dot { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.9rem; flex-shrink:0; }
+  .timeline-dot.done { background:#dcfce7; }
+  .timeline-dot.active { background:#eef2ff; }
+  .timeline-dot.pending { background:#f1f5f9; }
+  .timeline-content { flex:1; }
+  .timeline-title { font-weight:600; font-size:0.9rem; }
+  .timeline-desc { font-size:0.8rem; color:var(--text-secondary); }
+  .timeline-time { font-size:0.75rem; color:var(--text-secondary); margin-top:2px; }
+  
+  .custom-task-input { display:flex; gap:8px; margin-top:12px; }
+  .custom-task-input input { flex:1; padding:10px 12px; border:2px solid var(--border); border-radius:10px; font-size:0.9rem; }
+  .custom-task-input input:focus { outline:none; border-color:var(--primary); }
+  
+  .smart-suggest { background:linear-gradient(135deg,#eef2ff,#faf5ff); border:2px solid var(--primary-light); border-radius:14px; padding:16px; margin-bottom:16px; }
+  .smart-suggest .ss-title { font-weight:700; font-size:0.95rem; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .smart-suggest .ss-text { font-size:0.85rem; color:var(--text-secondary); line-height:1.6; }
+  .smart-suggest .ss-actions { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+
+  
+  /* 顶部导航 */
+  .navbar { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 16px 24px; display:flex; align-items:center; justify-content:space-between; box-shadow: var(--shadow-lg); position:sticky; top:0; z-index:100; }
+  .navbar h1 { font-size:1.5rem; font-weight:700; display:flex; align-items:center; gap:8px; }
+  .navbar h1 span { font-size:1.8rem; }
+  .streak-badge { background: rgba(255,255,255,0.2); padding:6px 14px; border-radius:20px; font-size:0.9rem; display:flex; align-items:center; gap:6px; backdrop-filter:blur(4px); }
+  
+  /* 标签导航 */
+  .tab-nav { display:flex; background: var(--card); border-bottom:2px solid var(--border); overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .tab-btn { flex:1; min-width:0; padding:14px 8px; border:none; background:none; font-size:0.85rem; color:var(--text-secondary); cursor:pointer; transition:all 0.2s; display:flex; flex-direction:column; align-items:center; gap:4px; white-space:nowrap; }
+  .tab-btn .icon { font-size:1.4rem; }
+  .tab-btn.active { color:var(--primary); border-bottom:3px solid var(--primary); font-weight:600; }
+  .tab-btn:hover { background:#f1f5f9; }
+  
+  /* 内容区 */
+  .tab-content { display:none; padding:20px; max-width:800px; margin:0 auto; animation: fadeIn 0.3s; }
+  .tab-content.active { display:block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  
+  /* 通用卡片 */
+  .card { background:var(--card); border-radius:16px; padding:20px; box-shadow:var(--shadow); margin-bottom:16px; border:1px solid var(--border); }
+  .card-title { font-size:1.1rem; font-weight:700; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  
+  /* ========== 首页 ========== */
+  .greeting { font-size:1.4rem; font-weight:700; margin-bottom:4px; }
+  .greeting-sub { color:var(--text-secondary); margin-bottom:20px; }
+  .stats-grid { display:grid; grid-template-columns: repeat(2,1fr); gap:12px; margin-bottom:20px; }
+  .stat-card { background:var(--card); border-radius:14px; padding:16px; text-align:center; border:1px solid var(--border); box-shadow:var(--shadow); }
+  .stat-number { font-size:2rem; font-weight:800; color:var(--primary); }
+  .stat-label { font-size:0.8rem; color:var(--text-secondary); margin-top:4px; }
+  .today-tasks .task-item { display:flex; align-items:center; gap:12px; padding:12px; border-radius:10px; margin-bottom:8px; background:#f8fafc; cursor:pointer; transition:all 0.2s; }
+  .today-tasks .task-item:hover { background:#eef2ff; transform:translateX(4px); }
+  .task-icon { font-size:1.6rem; }
+  .task-info { flex:1; }
+  .task-info .task-name { font-weight:600; font-size:0.95rem; }
+  .task-info .task-desc { font-size:0.8rem; color:var(--text-secondary); }
+  .task-status { font-size:1.2rem; }
+  
+  /* ========== 单词记忆 ========== */
+  .word-controls { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .word-controls select, .word-controls input { padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; }
+  .word-controls select { flex:1; min-width:120px; }
+  .btn { padding:8px 16px; border:none; border-radius:8px; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+  .btn-primary { background:var(--primary); color:white; }
+  .btn-primary:hover { background:var(--primary-dark); }
+  .btn-success { background:var(--success); color:white; }
+  .btn-danger { background:var(--danger); color:white; }
+  .btn-accent { background:var(--accent); color:white; }
+  .btn-outline { background:transparent; border:2px solid var(--border); color:var(--text); }
+  .btn-outline:hover { border-color:var(--primary); color:var(--primary); }
+  
+  .flashcard-container { perspective:1000px; margin-bottom:16px; }
+  .flashcard { width:100%; min-height:280px; position:relative; transform-style:preserve-3d; transition:transform 0.6s; cursor:pointer; }
+  .flashcard.flipped { transform:rotateY(180deg); }
+  .flashcard-front, .flashcard-back { position:absolute; inset:0; backface-visibility:hidden; border-radius:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; border:2px solid var(--border); }
+  .flashcard-front { background:linear-gradient(135deg,#eef2ff,#e0e7ff); }
+  .flashcard-back { background:linear-gradient(135deg,#ecfdf5,#d1fae5); transform:rotateY(180deg); }
+  .flashcard-word { font-size:2.4rem; font-weight:800; color:var(--primary); margin-bottom:8px; }
+  .flashcard-phonetic { font-size:1.1rem; color:var(--text-secondary); margin-bottom:12px; }
+  .flashcard-meaning { font-size:1.5rem; font-weight:700; color:var(--success); margin-bottom:8px; }
+  .flashcard-example { font-size:0.9rem; color:var(--text-secondary); text-align:center; font-style:italic; max-width:90%; }
+  .flashcard-root { font-size:0.85rem; color:var(--accent); background:rgba(245,158,11,0.1); padding:4px 10px; border-radius:6px; margin-top:8px; }
+  .flip-hint { font-size:0.8rem; color:var(--text-secondary); margin-top:12px; }
+  .word-nav { display:flex; justify-content:center; gap:12px; margin-bottom:16px; align-items:center; }
+  .word-progress { font-size:0.9rem; color:var(--text-secondary); }
+  
+  .word-list { max-height:400px; overflow-y:auto; }
+  .word-item { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-bottom:1px solid var(--border); }
+  .word-item:last-child { border-bottom:none; }
+  .word-item .word-text { font-weight:600; }
+  .word-item .word-meaning { font-size:0.85rem; color:var(--text-secondary); }
+  .mastery-stars { font-size:0.8rem; letter-spacing:2px; }
+  .mastery-0 { color:#e2e8f0; }
+  .mastery-1 { color:var(--danger); }
+  .mastery-2 { color:var(--accent); }
+  .mastery-3 { color:var(--success); }
+  
+  /* ========== 语法练习 ========== */
+  .grammar-category { display:grid; grid-template-columns: repeat(2,1fr); gap:12px; margin-bottom:20px; }
+  .grammar-cat-btn { padding:16px; border:2px solid var(--border); border-radius:12px; text-align:center; cursor:pointer; transition:all 0.2s; background:var(--card); }
+  .grammar-cat-btn:hover { border-color:var(--primary); background:#eef2ff; }
+  .grammar-cat-btn.active { border-color:var(--primary); background:#eef2ff; }
+  .grammar-cat-btn .cat-icon { font-size:2rem; margin-bottom:6px; }
+  .grammar-cat-btn .cat-name { font-weight:600; font-size:0.9rem; }
+  
+  .question-card { margin-bottom:16px; }
+  .question-text { font-size:1.05rem; font-weight:600; margin-bottom:12px; line-height:1.6; }
+  .question-text .blank { border-bottom:2px solid var(--primary); min-width:60px; display:inline-block; text-align:center; color:var(--primary); }
+  .options-list { list-style:none; }
+  .options-list li { padding:10px 14px; border:2px solid var(--border); border-radius:10px; margin-bottom:8px; cursor:pointer; transition:all 0.2s; font-size:0.95rem; }
+  .options-list li:hover { border-color:var(--primary-light); background:#f8faff; }
+  .options-list li.selected { border-color:var(--primary); background:#eef2ff; font-weight:600; }
+  .options-list li.correct { border-color:var(--success); background:#ecfdf5; color:var(--success); }
+  .options-list li.wrong { border-color:var(--danger); background:#fef2f2; color:var(--danger); }
+  .explanation { background:#fffbeb; border-left:4px solid var(--accent); padding:12px; border-radius:0 8px 8px 0; margin-top:8px; font-size:0.9rem; display:none; }
+  .explanation.show { display:block; }
+  .grammar-score { text-align:center; padding:16px; }
+  .grammar-score .score-circle { width:100px; height:100px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:white; display:inline-flex; align-items:center; justify-content:center; font-size:1.8rem; font-weight:800; margin-bottom:8px; }
+  
+  /* ========== 听力训练 ========== */
+  .listen-item { padding:16px; border:1px solid var(--border); border-radius:12px; margin-bottom:12px; background:var(--card); }
+  .listen-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .listen-title { font-weight:600; }
+  .listen-level { font-size:0.75rem; padding:3px 8px; border-radius:12px; background:#eef2ff; color:var(--primary); }
+  .listen-controls { display:flex; gap:8px; margin-bottom:10px; align-items:center; }
+  .speed-btn { padding:4px 10px; border:1px solid var(--border); border-radius:6px; background:none; cursor:pointer; font-size:0.8rem; }
+  .speed-btn.active { background:var(--primary); color:white; border-color:var(--primary); }
+  .listen-textarea { width:100%; min-height:80px; padding:10px; border:2px solid var(--border); border-radius:8px; font-size:0.95rem; resize:vertical; font-family:inherit; }
+  .listen-textarea:focus { outline:none; border-color:var(--primary); }
+  .dictation-result { margin-top:8px; font-size:0.9rem; }
+  .dictation-result .correct-word { color:var(--success); font-weight:600; }
+  .dictation-result .wrong-word { color:var(--danger); text-decoration:line-through; }
+  
+  /* ========== 写作练习 ========== */
+  .writing-templates { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:16px; }
+  .template-btn { padding:12px; border:2px solid var(--border); border-radius:10px; text-align:center; cursor:pointer; transition:all 0.2s; background:var(--card); }
+  .template-btn:hover { border-color:var(--primary); background:#eef2ff; }
+  .template-btn .tpl-icon { font-size:1.4rem; }
+  .template-btn .tpl-name { font-size:0.85rem; font-weight:600; margin-top:4px; }
+  .writing-area { width:100%; min-height:200px; padding:14px; border:2px solid var(--border); border-radius:10px; font-size:1rem; resize:vertical; font-family:inherit; line-height:1.8; }
+  .writing-area:focus { outline:none; border-color:var(--primary); }
+  .writing-toolbar { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+  .phrase-tag { display:inline-block; padding:4px 10px; background:#eef2ff; border-radius:6px; font-size:0.8rem; color:var(--primary); cursor:pointer; transition:all 0.2s; }
+  .phrase-tag:hover { background:var(--primary); color:white; }
+  .writing-feedback { margin-top:12px; }
+  .feedback-item { padding:8px 12px; border-radius:8px; margin-bottom:6px; font-size:0.9rem; }
+  .feedback-good { background:#ecfdf5; color:var(--success); }
+  .feedback-warn { background:#fffbeb; color:#d97706; }
+  .feedback-bad { background:#fef2f2; color:var(--danger); }
+  .word-count { font-size:0.85rem; color:var(--text-secondary); text-align:right; margin-top:4px; }
+  
+  /* ========== 进度/打卡 ========== */
+  .checkin-calendar { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:16px; }
+  .cal-header { text-align:center; font-size:0.75rem; color:var(--text-secondary); font-weight:600; padding:4px; }
+  .cal-day { aspect-ratio:1; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:0.8rem; background:#f1f5f9; }
+  .cal-day.checked { background:var(--primary); color:white; font-weight:700; }
+  .cal-day.today { border:2px solid var(--primary); }
+  .cal-day.empty { background:transparent; }
+  
+  .progress-bar { height:8px; background:#e2e8f0; border-radius:4px; overflow:hidden; margin:6px 0; }
+  .progress-fill { height:100%; border-radius:4px; transition:width 0.5s; }
+  .progress-fill.pf-primary { background:linear-gradient(90deg,var(--primary),var(--primary-light)); }
+  .progress-fill.pf-success { background:linear-gradient(90deg,var(--success),#34d399); }
+  .progress-fill.pf-accent { background:linear-gradient(90deg,var(--accent),#fbbf24); }
+  
+  /* 响应式 */
+  @media (max-width:640px) {
+    .stats-grid { grid-template-columns:repeat(2,1fr); }
+    .grammar-category { grid-template-columns:1fr; }
+    .writing-templates { grid-template-columns:1fr; }
+    .tab-btn { font-size:0.75rem; padding:10px 4px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 启动画面 -->
+<div class="splash-screen" id="splashScreen">
+  <div class="splash-logo">📚</div>
+  <div class="splash-title">EnglishPro</div>
+  <div class="splash-sub">你的专属英语学习助手</div>
+  <div class="splash-loader"><div class="splash-loader-bar"></div></div>
+</div>
+
+<!-- PWA 安装提示 -->
+<div class="install-banner" id="installBanner">
+  <div class="install-icon">📲</div>
+  <div class="install-info">
+    <div class="install-title">添加到主屏幕</div>
+    <div class="install-desc">像原生 App 一样使用 EnglishPro</div>
+  </div>
+  <button class="install-btn" onclick="installPWA()">安装</button>
+  <button class="install-close" onclick="dismissInstall()">✕</button>
+</div>
+
+<!-- ==================== 登录/注册页 ==================== -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <div class="auth-logo">📚</div>
+    <div class="auth-title">EnglishPro</div>
+    <div class="auth-subtitle">你的专属英语学习助手</div>
+    
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-auth="login" onclick="switchAuthTab('login')">登录</button>
+      <button class="auth-tab" data-auth="register" onclick="switchAuthTab('register')">注册</button>
+    </div>
+    
+    <div class="auth-error" id="authError"></div>
+    <div class="auth-success" id="authSuccess"></div>
+    
+    <!-- 登录表单 -->
+    <div class="auth-form active" id="loginForm">
+      <div class="auth-input-group">
+        <label class="auth-label">用户名 / 邮箱</label>
+        <input class="auth-input" type="text" id="loginUsername" placeholder="请输入用户名或邮箱" autocomplete="username">
+      </div>
+      <div class="auth-input-group">
+        <label class="auth-label">密码</label>
+        <div class="password-wrapper">
+          <input class="auth-input" type="password" id="loginPassword" placeholder="请输入密码" autocomplete="current-password">
+          <button class="password-toggle" onclick="togglePassword('loginPassword', this)" type="button">👁️</button>
+        </div>
+      </div>
+      <div class="auth-remember">
+        <input type="checkbox" id="rememberMe" checked>
+        <label for="rememberMe">记住我</label>
+      </div>
+      <button class="auth-btn" onclick="handleLogin()">登 录</button>
+    </div>
+    
+    <!-- 注册表单 -->
+    <div class="auth-form" id="registerForm">
+      <div class="auth-input-group">
+        <label class="auth-label">用户名</label>
+        <input class="auth-input" type="text" id="regUsername" placeholder="3-20个字符，字母/数字/下划线" autocomplete="username">
+      </div>
+      <div class="auth-input-group">
+        <label class="auth-label">邮箱</label>
+        <input class="auth-input" type="email" id="regEmail" placeholder="example@mail.com" autocomplete="email">
+      </div>
+      <div class="auth-input-group">
+        <label class="auth-label">密码</label>
+        <div class="password-wrapper">
+          <input class="auth-input" type="password" id="regPassword" placeholder="至少6位，含字母和数字" oninput="checkPasswordStrength()" autocomplete="new-password">
+          <button class="password-toggle" onclick="togglePassword('regPassword', this)" type="button">👁️</button>
+        </div>
+        <div class="password-strength"><div class="password-strength-bar" id="passwordStrengthBar"></div></div>
+      </div>
+      <div class="auth-input-group">
+        <label class="auth-label">确认密码</label>
+        <div class="password-wrapper">
+          <input class="auth-input" type="password" id="regPassword2" placeholder="再次输入密码" autocomplete="new-password">
+          <button class="password-toggle" onclick="togglePassword('regPassword2', this)" type="button">👁️</button>
+        </div>
+      </div>
+      <button class="auth-btn" onclick="handleRegister()">注 册</button>
+    </div>
+    
+    <div class="auth-divider">或者</div>
+    <button class="auth-guest" onclick="guestLogin()">👀 游客模式体验</button>
+  </div>
+</div>
+
+<!-- 导航栏 -->
+<nav class="navbar" style="position:relative;">
+  <h1><span>📚</span> EnglishPro</h1>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="streak-badge">🔥 连续 <span id="streakCount">0</span> 天</div>
+    <div class="user-menu" id="userMenu" style="display:none;">
+      <div class="user-avatar" id="userAvatar">U</div>
+      <span class="user-name" id="userDisplayName">用户</span>
+      <button class="user-dropdown-btn" onclick="toggleUserDropdown()">▼</button>
+    </div>
+    <div class="user-dropdown" id="userDropdown">
+      <div class="user-dropdown-header">
+        <div class="ud-name" id="udName">用户</div>
+        <div class="ud-email" id="udEmail">user@email.com</div>
+      </div>
+      <div class="user-dropdown-item" onclick="showProfile()">👤 个人信息</div>
+      <div class="user-dropdown-item" onclick="resetMyData()">🔄 重置学习数据</div>
+      <div class="user-dropdown-divider"></div>
+      <div class="user-dropdown-item danger" onclick="handleLogout()">🚪 退出登录</div>
+    </div>
+  </div>
+</nav>
+
+<!-- 标签导航 -->
+<div class="tab-nav">
+  <button class="tab-btn active" data-tab="home"><span class="icon">🏠</span>首页</button>
+  <button class="tab-btn" data-tab="plan"><span class="icon">🎯</span>计划</button>
+  <button class="tab-btn" data-tab="vocab"><span class="icon">📖</span>单词</button>
+  <button class="tab-btn" data-tab="grammar"><span class="icon">✏️</span>语法</button>
+  <button class="tab-btn" data-tab="listening"><span class="icon">🎧</span>听力</button>
+  <button class="tab-btn" data-tab="writing"><span class="icon">✍️</span>写作</button>
+  <button class="tab-btn" data-tab="progress"><span class="icon">📊</span>进度</button>
+</div>
+
+<!-- ==================== 首页 ==================== -->
+<div class="tab-content active" id="tab-home">
+  <div class="greeting" id="greetingText">早上好！</div>
+  <div class="greeting-sub">每天进步一点点，英语能力大提升 🚀</div>
+  
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number" id="totalWords">0</div>
+      <div class="stat-label">已学单词</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="todayWords">0</div>
+      <div class="stat-label">今日新学</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="grammarCorrect">0%</div>
+      <div class="stat-label">语法正确率</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="totalDays">0</div>
+      <div class="stat-label">学习天数</div>
+    </div>
+  </div>
+  
+  <div class="card">
+    <div class="card-title">📋 今日任务</div>
+    <div class="today-tasks" id="todayTasks"></div>
+  </div>
+  
+  <div class="card">
+    <div class="card-title">💡 每日一句</div>
+    <div id="dailySentence" style="font-style:italic;line-height:1.8;color:var(--text-secondary)"></div>
+    <div id="dailySentenceCn" style="margin-top:8px;font-size:0.9rem;color:var(--text-secondary)"></div>
+  </div>
+</div>
+
+<!-- ==================== 学习计划 ==================== -->
+<div class="tab-content" id="tab-plan">
+  <!-- 智能建议 -->
+  <div class="smart-suggest" id="smartSuggest">
+    <div class="ss-title">🤖 智能建议</div>
+    <div class="ss-text" id="smartText">根据你的学习情况，我来帮你调整计划...</div>
+    <div class="ss-actions" id="smartActions"></div>
+  </div>
+  
+  <!-- 今日概览 -->
+  <div class="plan-summary">
+    <div class="plan-sum-item">
+      <div class="plan-sum-num psn-primary" id="planTotal">0</div>
+      <div class="plan-sum-label">今日任务</div>
+    </div>
+    <div class="plan-sum-item">
+      <div class="plan-sum-num psn-success" id="planDone">0</div>
+      <div class="plan-sum-label">已完成</div>
+    </div>
+    <div class="plan-sum-item">
+      <div class="plan-sum-num psn-accent" id="planStreak">0</div>
+      <div class="plan-sum-label">连续天数</div>
+    </div>
+  </div>
+  
+  <!-- 学习目标调节 -->
+  <div class="card">
+    <div class="card-title">⚙️ 每日目标调节</div>
+    <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:14px;">拖动滑块自定义你的每日学习量，量力而行，持之以恒！</p>
+    
+    <div class="goal-adjust">
+      <label>📖 单词/天</label>
+      <input type="range" id="goalVocab" min="3" max="50" value="10" oninput="updateGoalDisplay('goalVocab','goalVocabVal')">
+      <span class="goal-value" id="goalVocabVal">10</span>
+    </div>
+    <div class="goal-adjust">
+      <label>✏️ 语法题/天</label>
+      <input type="range" id="goalGrammar" min="2" max="30" value="5" oninput="updateGoalDisplay('goalGrammar','goalGrammarVal')">
+      <span class="goal-value" id="goalGrammarVal">5</span>
+    </div>
+    <div class="goal-adjust">
+      <label>🎧 听力/天</label>
+      <input type="range" id="goalListening" min="1" max="10" value="1" oninput="updateGoalDisplay('goalListening','goalListeningVal')">
+      <span class="goal-value" id="goalListeningVal">1</span>
+    </div>
+    <div class="goal-adjust">
+      <label>✍️ 写作/天</label>
+      <input type="range" id="goalWriting" min="1" max="5" value="1" oninput="updateGoalDisplay('goalWriting','goalWritingVal')">
+      <span class="goal-value" id="goalWritingVal">1</span>
+    </div>
+    
+    <div style="text-align:right;margin-top:12px;">
+      <button class="btn btn-primary" onclick="saveGoals()">💾 保存目标</button>
+    </div>
+  </div>
+  
+  <!-- 今日任务卡片 -->
+  <div class="card">
+    <div class="card-title">📋 今日学习任务</div>
+    <div id="planGoals"></div>
+  </div>
+  
+  <!-- 学习时间线 -->
+  <div class="card">
+    <div class="card-title">⏰ 今日时间线</div>
+    <div class="plan-timeline" id="planTimeline"></div>
+  </div>
+  
+  <!-- 自定义任务 -->
+  <div class="card">
+    <div class="card-title">➕ 自定义任务</div>
+    <div id="customTasks"></div>
+    <div class="custom-task-input">
+      <input type="text" id="customTaskInput" placeholder="添加自定义学习任务，如：看一篇英文新闻">
+      <button class="btn btn-primary" onclick="addCustomTask()">添加</button>
+    </div>
+  </div>
+  
+  <!-- 学习模式切换 -->
+  <div class="card">
+    <div class="card-title">🎮 学习模式</div>
+    <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:12px;">选择适合你的学习节奏</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+      <div class="grammar-cat-btn" data-mode="easy" onclick="switchMode('easy')">
+        <div class="cat-icon">🐢</div>
+        <div class="cat-name">轻松模式</div>
+      </div>
+      <div class="grammar-cat-btn active" data-mode="normal" onclick="switchMode('normal')">
+        <div class="cat-icon">🚶</div>
+        <div class="cat-name">标准模式</div>
+      </div>
+      <div class="grammar-cat-btn" data-mode="hard" onclick="switchMode('hard')">
+        <div class="cat-icon">🔥</div>
+        <div class="cat-name">冲刺模式</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 单词记忆 ==================== -->
+<div class="tab-content" id="tab-vocab">
+  <div class="word-controls">
+    <select id="vocabLevel">
+      <option value="all">全部级别</option>
+      <option value="new">未学习</option>
+      <option value="learning">学习中</option>
+      <option value="mastered">已掌握</option>
+    </select>
+    <select id="vocabCategory">
+      <option value="basic">🟢 基础词汇</option>
+      <option value="junior">📘 初中词汇</option>
+      <option value="senior">📕 高中词汇</option>
+      <option value="core">🔵 核心词汇</option>
+      <option value="business">💼 商务英语</option>
+      <option value="ielts">🎓 雅思词汇</option>
+    </select>
+  </div>
+  
+  <div class="flashcard-container">
+    <div class="flashcard" id="flashcard" onclick="flipCard()">
+      <div class="flashcard-front">
+        <div class="flashcard-word" id="cardWord">—</div>
+        <div class="flashcard-phonetic" id="cardPhonetic"></div>
+        <div class="flip-hint">👆 点击翻转查看释义</div>
+      </div>
+      <div class="flashcard-back">
+        <div class="flashcard-meaning" id="cardMeaning">—</div>
+        <div class="flashcard-example" id="cardExample"></div>
+        <div class="flashcard-root" id="cardRoot"></div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="word-nav">
+    <button class="btn btn-outline" onclick="prevWord()">◀ 上一个</button>
+    <span class="word-progress" id="wordProgress">0 / 0</span>
+    <button class="btn btn-outline" onclick="nextWord()">下一个 ▶</button>
+  </div>
+  
+  <div style="display:flex;gap:8px;justify-content:center;margin-bottom:20px;">
+    <button class="btn btn-danger" onclick="markWord('hard')">😕 不认识</button>
+    <button class="btn btn-accent" onclick="markWord('medium')">🤔 模糊</button>
+    <button class="btn btn-success" onclick="markWord('easy')">😊 认识了</button>
+  </div>
+  
+  <div class="card">
+    <div class="card-title">📒 单词本</div>
+    <div class="word-list" id="wordList"></div>
+  </div>
+</div>
+
+<!-- ==================== 语法练习 ==================== -->
+<div class="tab-content" id="tab-grammar">
+  <div class="card">
+    <div class="card-title">📚 语法分类</div>
+    <div class="grammar-category" id="grammarCategories">
+      <div class="grammar-cat-btn active" data-cat="tense"><div class="cat-icon">⏰</div><div class="cat-name">时态</div></div>
+      <div class="grammar-cat-btn" data-cat="clause"><div class="cat-icon">🔗</div><div class="cat-name">从句</div></div>
+      <div class="grammar-cat-btn" data-cat="voice"><div class="cat-icon">🔄</div><div class="cat-name">语态</div></div>
+      <div class="grammar-cat-btn" data-cat="subjunctive"><div class="cat-icon">💫</div><div class="cat-name">虚拟语气</div></div>
+    </div>
+  </div>
+  
+  <div id="grammarQuestion"></div>
+  
+  <div style="text-align:center;margin-top:12px;">
+    <button class="btn btn-primary" onclick="loadGrammarQuestion()">下一题</button>
+  </div>
+</div>
+
+<!-- ==================== 听力训练 ==================== -->
+<div class="tab-content" id="tab-listening">
+  <div class="card">
+    <div class="card-title">🎧 听力材料</div>
+    <div id="listeningMaterials"></div>
+  </div>
+</div>
+
+<!-- ==================== 写作练习 ==================== -->
+<div class="tab-content" id="tab-writing">
+  <div class="card">
+    <div class="card-title">📝 写作模板</div>
+    <div class="writing-templates">
+      <div class="template-btn" data-tpl="email"><div class="tpl-icon">📧</div><div class="tpl-name">邮件写作</div></div>
+      <div class="template-btn" data-tpl="essay"><div class="tpl-icon">📄</div><div class="tpl-name">议论文</div></div>
+      <div class="template-btn" data-tpl="letter"><div class="tpl-icon">✉️</div><div class="tpl-name">书信</div></div>
+      <div class="template-btn" data-tpl="report"><div class="tpl-icon">📊</div><div class="tpl-name">报告</div></div>
+    </div>
+  </div>
+  
+  <div class="card">
+    <div class="card-title">💡 常用表达</div>
+    <div class="writing-toolbar" id="phraseToolbar"></div>
+  </div>
+  
+  <div class="card">
+    <div class="card-title">✍️ 写作区域</div>
+    <div id="writingPrompt" style="margin-bottom:12px;padding:10px;background:#eef2ff;border-radius:8px;font-size:0.9rem;display:none;"></div>
+    <textarea class="writing-area" id="writingArea" placeholder="在这里开始你的英文写作..."></textarea>
+    <div class="word-count">字数: <span id="wordCount">0</span></div>
+  </div>
+  
+  <div style="display:flex;gap:8px;margin-bottom:16px;">
+    <button class="btn btn-primary" onclick="analyzeWriting()">🔍 智能分析</button>
+    <button class="btn btn-outline" onclick="saveWriting()">💾 保存</button>
+    <button class="btn btn-outline" onclick="clearWriting()">🗑️ 清空</button>
+  </div>
+  
+  <div class="writing-feedback" id="writingFeedback"></div>
+</div>
+
+<!-- ==================== 进度追踪 ==================== -->
+<div class="tab-content" id="tab-progress">
+  <div class="card">
+    <div class="card-title">📅 打卡日历</div>
+    <div class="checkin-calendar" id="checkinCalendar"></div>
+  </div>
+  
+  <div class="card">
+    <div class="card-title">📈 学习进度</div>
+    <div id="progressStats"></div>
+  </div>
+  
+  <div class="card">
+    <div class="card-title">🏆 成就</div>
+    <div id="achievements"></div>
+  </div>
+</div>
+
+<script>
+// ==================== 数据层 ====================
+
+// 单词数据库
+const WORDS_DB = {
+  basic: [
+    // ---- 日常动词 ----
+    { word:"be", phonetic:"/biː/", meaning:"v. 是；存在", example:"I am a student.", root:"基础动词", mastery:0 },
+    { word:"have", phonetic:"/hæv/", meaning:"v. 有；拥有", example:"I have a book.", root:"基础动词", mastery:0 },
+    { word:"do", phonetic:"/duː/", meaning:"v. 做；干", example:"What do you do?", root:"基础动词", mastery:0 },
+    { word:"go", phonetic:"/ɡəʊ/", meaning:"v. 去；走", example:"I go to school every day.", root:"基础动词", mastery:0 },
+    { word:"come", phonetic:"/kʌm/", meaning:"v. 来；来到", example:"Please come here.", root:"基础动词", mastery:0 },
+    { word:"get", phonetic:"/ɡet/", meaning:"v. 获得；变得", example:"I got a new job.", root:"基础动词", mastery:0 },
+    { word:"make", phonetic:"/meɪk/", meaning:"v. 制作；使", example:"She made a cake.", root:"基础动词", mastery:0 },
+    { word:"take", phonetic:"/teɪk/", meaning:"v. 拿；带", example:"Take your time.", root:"基础动词", mastery:0 },
+    { word:"give", phonetic:"/ɡɪv/", meaning:"v. 给；赠送", example:"Give me the pen.", root:"基础动词", mastery:0 },
+    { word:"see", phonetic:"/siː/", meaning:"v. 看见；理解", example:"I can see the mountain.", root:"基础动词", mastery:0 },
+    { word:"know", phonetic:"/nəʊ/", meaning:"v. 知道；认识", example:"I know the answer.", root:"基础动词", mastery:0 },
+    { word:"think", phonetic:"/θɪŋk/", meaning:"v. 想；认为", example:"I think it's a good idea.", root:"基础动词", mastery:0 },
+    { word:"say", phonetic:"/seɪ/", meaning:"v. 说；讲", example:"What did she say?", root:"基础动词", mastery:0 },
+    { word:"find", phonetic:"/faɪnd/", meaning:"v. 找到；发现", example:"I found my keys.", root:"基础动词", mastery:0 },
+    { word:"tell", phonetic:"/tel/", meaning:"v. 告诉；讲述", example:"Tell me your name.", root:"基础动词", mastery:0 },
+    { word:"ask", phonetic:"/ɑːsk/", meaning:"v. 问；请求", example:"May I ask a question?", root:"基础动词", mastery:0 },
+    { word:"work", phonetic:"/wɜːk/", meaning:"v./n. 工作；劳动", example:"I work from home.", root:"基础动词", mastery:0 },
+    { word:"call", phonetic:"/kɔːl/", meaning:"v./n. 打电话；呼叫", example:"Call me later.", root:"基础动词", mastery:0 },
+    { word:"try", phonetic:"/traɪ/", meaning:"v. 尝试；努力", example:"Try your best.", root:"基础动词", mastery:0 },
+    { word:"need", phonetic:"/niːd/", meaning:"v./n. 需要", example:"I need some help.", root:"基础动词", mastery:0 },
+    { word:"feel", phonetic:"/fiːl/", meaning:"v. 感觉；触摸", example:"I feel happy today.", root:"基础动词", mastery:0 },
+    { word:"put", phonetic:"/pʊt/", meaning:"v. 放；置", example:"Put the book on the table.", root:"基础动词", mastery:0 },
+    { word:"bring", phonetic:"/brɪŋ/", meaning:"v. 带来；引起", example:"Bring your homework.", root:"基础动词", mastery:0 },
+    { word:"keep", phonetic:"/kiːp/", meaning:"v. 保持；保留", example:"Keep calm.", root:"基础动词", mastery:0 },
+    { word:"let", phonetic:"/let/", meaning:"v. 让；允许", example:"Let me help you.", root:"基础动词", mastery:0 },
+    { word:"begin", phonetic:"/bɪˈɡɪn/", meaning:"v. 开始", example:"Let's begin the class.", root:"基础动词", mastery:0 },
+    { word:"show", phonetic:"/ʃəʊ/", meaning:"v. 展示；说明", example:"Show me how to do it.", root:"基础动词", mastery:0 },
+    { word:"hear", phonetic:"/hɪə(r)/", meaning:"v. 听到；听说", example:"I can hear the music.", root:"基础动词", mastery:0 },
+    { word:"play", phonetic:"/pleɪ/", meaning:"v. 玩；播放", example:"Let's play a game.", root:"基础动词", mastery:0 },
+    { word:"run", phonetic:"/rʌn/", meaning:"v. 跑；运营", example:"He runs every morning.", root:"基础动词", mastery:0 },
+    { word:"move", phonetic:"/muːv/", meaning:"v. 移动；搬家", example:"Don't move!", root:"基础动词", mastery:0 },
+    { word:"live", phonetic:"/lɪv/", meaning:"v. 生活；居住", example:"I live in Beijing.", root:"基础动词", mastery:0 },
+    { word:"believe", phonetic:"/bɪˈliːv/", meaning:"v. 相信；认为", example:"I believe in you.", root:"be-(存在) + lieve(爱)", mastery:0 },
+    { word:"hold", phonetic:"/həʊld/", meaning:"v. 拿住；举行", example:"Hold my hand.", root:"基础动词", mastery:0 },
+    { word:"learn", phonetic:"/lɜːn/", meaning:"v. 学习；学会", example:"I learn English every day.", root:"基础动词", mastery:0 },
+    // ---- 日常名词 ----
+    { word:"time", phonetic:"/taɪm/", meaning:"n. 时间；次数", example:"What time is it?", root:"基础名词", mastery:0 },
+    { word:"people", phonetic:"/ˈpiːpl/", meaning:"n. 人；人们", example:"Many people like music.", root:"基础名词", mastery:0 },
+    { word:"way", phonetic:"/weɪ/", meaning:"n. 方式；路", example:"This is the best way.", root:"基础名词", mastery:0 },
+    { word:"day", phonetic:"/deɪ/", meaning:"n. 天；白天", example:"Have a nice day!", root:"基础名词", mastery:0 },
+    { word:"man", phonetic:"/mæn/", meaning:"n. 男人；人类", example:"The man is tall.", root:"基础名词", mastery:0 },
+    { word:"woman", phonetic:"/ˈwʊmən/", meaning:"n. 女人", example:"The woman is kind.", root:"基础名词", mastery:0 },
+    { word:"child", phonetic:"/tʃaɪld/", meaning:"n. 孩子；儿童", example:"The child is playing.", root:"基础名词", mastery:0 },
+    { word:"world", phonetic:"/wɜːld/", meaning:"n. 世界", example:"The world is beautiful.", root:"基础名词", mastery:0 },
+    { word:"life", phonetic:"/laɪf/", meaning:"n. 生活；生命", example:"Life is short.", root:"基础名词", mastery:0 },
+    { word:"hand", phonetic:"/hænd/", meaning:"n. 手", example:"Raise your hand.", root:"基础名词", mastery:0 },
+    { word:"part", phonetic:"/pɑːt/", meaning:"n. 部分；角色", example:"This is part of the plan.", root:"基础名词", mastery:0 },
+    { word:"place", phonetic:"/pleɪs/", meaning:"n. 地方；位置", example:"This is a nice place.", root:"基础名词", mastery:0 },
+    { word:"case", phonetic:"/keɪs/", meaning:"n. 情况；案例", example:"In that case, I agree.", root:"基础名词", mastery:0 },
+    { word:"week", phonetic:"/wiːk/", meaning:"n. 周；星期", example:"See you next week.", root:"基础名词", mastery:0 },
+    { word:"company", phonetic:"/ˈkʌmpəni/", meaning:"n. 公司；陪伴", example:"I work in a big company.", root:"com-(共同) + pany(面包)", mastery:0 },
+    { word:"system", phonetic:"/ˈsɪstəm/", meaning:"n. 系统；制度", example:"The system works well.", root:"sys-(一起) + stem(站)", mastery:0 },
+    { word:"program", phonetic:"/ˈprəʊɡræm/", meaning:"n. 程序；节目", example:"I like this TV program.", root:"pro-(前) + gram(写)", mastery:0 },
+    { word:"question", phonetic:"/ˈkwestʃən/", meaning:"n. 问题", example:"That's a good question.", root:"quest(寻求) + ion", mastery:0 },
+    { word:"money", phonetic:"/ˈmʌni/", meaning:"n. 钱；货币", example:"Time is money.", root:"基础名词", mastery:0 },
+    { word:"water", phonetic:"/ˈwɔːtə(r)/", meaning:"n. 水", example:"I need some water.", root:"基础名词", mastery:0 },
+    { word:"home", phonetic:"/həʊm/", meaning:"n. 家；adv. 回家", example:"Let's go home.", root:"基础名词", mastery:0 },
+    { word:"room", phonetic:"/ruːm/", meaning:"n. 房间；空间", example:"Come into the room.", root:"基础名词", mastery:0 },
+    { word:"book", phonetic:"/bʊk/", meaning:"n. 书；v. 预订", example:"I'm reading a book.", root:"基础名词", mastery:0 },
+    { word:"food", phonetic:"/fuːd/", meaning:"n. 食物", example:"Chinese food is delicious.", root:"基础名词", mastery:0 },
+    { word:"door", phonetic:"/dɔː(r)/", meaning:"n. 门", example:"Close the door, please.", root:"基础名词", mastery:0 },
+    // ---- 日常形容词 ----
+    { word:"good", phonetic:"/ɡʊd/", meaning:"adj. 好的；擅长的", example:"This is a good book.", root:"基础形容词", mastery:0 },
+    { word:"new", phonetic:"/njuː/", meaning:"adj. 新的", example:"I have a new phone.", root:"基础形容词", mastery:0 },
+    { word:"first", phonetic:"/fɜːst/", meaning:"adj./adv. 第一的；首先", example:"First, let me introduce myself.", root:"基础形容词", mastery:0 },
+    { word:"last", phonetic:"/lɑːst/", meaning:"adj./adv. 最后的；上一个", example:"What did you do last weekend?", root:"基础形容词", mastery:0 },
+    { word:"long", phonetic:"/lɒŋ/", meaning:"adj. 长的；久的", example:"It's a long story.", root:"基础形容词", mastery:0 },
+    { word:"great", phonetic:"/ɡreɪt/", meaning:"adj. 伟大的；极好的", example:"That's a great idea!", root:"基础形容词", mastery:0 },
+    { word:"little", phonetic:"/ˈlɪtl/", meaning:"adj. 小的；少的", example:"I have a little time.", root:"基础形容词", mastery:0 },
+    { word:"own", phonetic:"/əʊn/", meaning:"adj./v. 自己的；拥有", example:"I have my own room.", root:"基础形容词", mastery:0 },
+    { word:"other", phonetic:"/ˈʌðə(r)/", meaning:"adj./pron. 其他的；另一个", example:"The other day I saw him.", root:"基础形容词", mastery:0 },
+    { word:"old", phonetic:"/əʊld/", meaning:"adj. 老的；旧的", example:"How old are you?", root:"基础形容词", mastery:0 },
+    { word:"right", phonetic:"/raɪt/", meaning:"adj./adv. 对的；右边", example:"You are right.", root:"基础形容词", mastery:0 },
+    { word:"big", phonetic:"/bɪɡ/", meaning:"adj. 大的", example:"That's a big house.", root:"基础形容词", mastery:0 },
+    { word:"high", phonetic:"/haɪ/", meaning:"adj./adv. 高的", example:"The mountain is very high.", root:"基础形容词", mastery:0 },
+    { word:"different", phonetic:"/ˈdɪfrənt/", meaning:"adj. 不同的", example:"We have different opinions.", root:"dif-(分开) + fer(带) + ent", mastery:0 },
+    { word:"small", phonetic:"/smɔːl/", meaning:"adj. 小的", example:"The room is small but nice.", root:"基础形容词", mastery:0 },
+    { word:"large", phonetic:"/lɑːdʒ/", meaning:"adj. 大的；大量的", example:"A large number of people came.", root:"基础形容词", mastery:0 },
+    { word:"next", phonetic:"/nekst/", meaning:"adj./adv. 下一个；接下来", example:"See you next time.", root:"基础形容词", mastery:0 },
+    { word:"early", phonetic:"/ˈɜːli/", meaning:"adj./adv. 早的", example:"I get up early every day.", root:"基础形容词", mastery:0 },
+    { word:"young", phonetic:"/jʌŋ/", meaning:"adj. 年轻的", example:"She is young and smart.", root:"基础形容词", mastery:0 },
+    { word:"important", phonetic:"/ɪmˈpɔːtnt/", meaning:"adj. 重要的", example:"This is very important.", root:"im-(进入) + port(运) + ant", mastery:0 },
+    // ---- 日常副词/代词/介词 ----
+    { word:"not", phonetic:"/nɒt/", meaning:"adv. 不；不是", example:"I am not tired.", root:"基础副词", mastery:0 },
+    { word:"also", phonetic:"/ˈɔːlsəʊ/", meaning:"adv. 也；而且", example:"I also like music.", root:"基础副词", mastery:0 },
+    { word:"very", phonetic:"/ˈveri/", meaning:"adv. 非常；很", example:"Thank you very much.", root:"基础副词", mastery:0 },
+    { word:"often", phonetic:"/ˈɒfn/", meaning:"adv. 经常", example:"I often read books.", root:"基础副词", mastery:0 },
+    { word:"still", phonetic:"/stɪl/", meaning:"adv. 仍然；还", example:"I still remember that day.", root:"基础副词", mastery:0 },
+    { word:"already", phonetic:"/ɔːlˈredi/", meaning:"adv. 已经", example:"I have already finished it.", root:"al-(完全) + ready(准备好)", mastery:0 },
+    { word:"never", phonetic:"/ˈnevə(r)/", meaning:"adv. 从不；决不", example:"I never give up.", root:"基础副词", mastery:0 },
+    { word:"always", phonetic:"/ˈɔːlweɪz/", meaning:"adv. 总是；一直", example:"She always smiles.", root:"基础副词", mastery:0 },
+    { word:"really", phonetic:"/ˈrɪːəli/", meaning:"adv. 真正地；实在", example:"Is it really true?", root:"real(真实) + ly", mastery:0 },
+    { word:"here", phonetic:"/hɪə(r)/", meaning:"adv. 这里", example:"Come here, please.", root:"基础副词", mastery:0 },
+    { word:"now", phonetic:"/naʊ/", meaning:"adv. 现在；此刻", example:"What are you doing now?", root:"基础副词", mastery:0 },
+    { word:"too", phonetic:"/tuː/", meaning:"adv. 也；太", example:"It's too hot today.", root:"基础副词", mastery:0 },
+    { word:"again", phonetic:"/əˈɡen/", meaning:"adv. 再次；又", example:"Say it again, please.", root:"a-(向) + gain(against)", mastery:0 },
+    { word:"then", phonetic:"/ðen/", meaning:"adv. 那时；然后", example:"First A, then B.", root:"基础副词", mastery:0 },
+    { word:"about", phonetic:"/əˈbaʊt/", meaning:"prep./adv. 关于；大约", example:"Tell me about yourself.", root:"基础介词", mastery:0 },
+    { word:"after", phonetic:"/ˈɑːftə(r)/", meaning:"prep./conj. 在…之后", example:"After dinner, we went home.", root:"基础介词", mastery:0 },
+    { word:"before", phonetic:"/bɪˈfɔː(r)/", meaning:"prep./conj. 在…之前", example:"Wash your hands before eating.", root:"be-(靠近) + fore(前面)", mastery:0 },
+    { word:"between", phonetic:"/bɪˈtwiːn/", meaning:"prep. 在…之间", example:"Sit between Tom and me.", root:"be-(靠近) + tween(两者)", mastery:0 },
+    { word:"under", phonetic:"/ˈʌndə(r)/", meaning:"prep. 在…下面", example:"The cat is under the table.", root:"基础介词", mastery:0 },
+    { word:"through", phonetic:"/θruː/", meaning:"prep./adv. 通过；穿过", example:"Go through the door.", root:"基础介词", mastery:0 },
+    // ---- 常用连词 ----
+    { word:"because", phonetic:"/bɪˈkɒz/", meaning:"conj. 因为", example:"I stayed home because it rained.", root:"by + cause(原因)", mastery:0 },
+    { word:"but", phonetic:"/bʌt/", meaning:"conj. 但是", example:"I'm tired but happy.", root:"基础连词", mastery:0 },
+    { word:"and", phonetic:"/ænd/", meaning:"conj. 和；而且", example:"You and I are friends.", root:"基础连词", mastery:0 },
+    { word:"or", phonetic:"/ɔː(r)/", meaning:"conj. 或者；否则", example:"Tea or coffee?", root:"基础连词", mastery:0 },
+    { word:"if", phonetic:"/ɪf/", meaning:"conj. 如果；假如", example:"If it rains, I'll stay home.", root:"基础连词", mastery:0 },
+    { word:"while", phonetic:"/waɪl/", meaning:"conj. 当…时；虽然", example:"I read while he slept.", root:"基础连词", mastery:0 },
+    { word:"although", phonetic:"/ɔːlˈðəʊ/", meaning:"conj. 虽然；尽管", example:"Although it's hard, I'll try.", root:"al-(完全) + though(尽管)", mastery:0 },
+    { word:"since", phonetic:"/sɪns/", meaning:"conj./prep. 自从；因为", example:"I've been here since 2020.", root:"基础连词", mastery:0 },
+    // ---- 数字与时间 ----
+    { word:"one", phonetic:"/wʌn/", meaning:"num. 一", example:"One plus one equals two.", root:"基础数词", mastery:0 },
+    { word:"two", phonetic:"/tuː/", meaning:"num. 二", example:"I have two hands.", root:"基础数词", mastery:0 },
+    { word:"three", phonetic:"/θriː/", meaning:"num. 三", example:"Three people are here.", root:"基础数词", mastery:0 },
+    { word:"first", phonetic:"/fɜːst/", meaning:"num./adj. 第一", example:"He came first.", root:"基础数词", mastery:0 },
+    { word:"second", phonetic:"/ˈsekənd/", meaning:"num./n. 第二；秒", example:"Wait a second.", root:"基础数词", mastery:0 },
+    { word:"hundred", phonetic:"/ˈhʌndrəd/", meaning:"num. 一百", example:"A hundred people came.", root:"基础数词", mastery:0 },
+    { word:"today", phonetic:"/təˈdeɪ/", meaning:"n./adv. 今天", example:"Today is Monday.", root:"基础时间", mastery:0 },
+    { word:"tomorrow", phonetic:"/təˈmɒrəʊ/", meaning:"n./adv. 明天", example:"See you tomorrow!", root:"to-(到) + morrow(早晨)", mastery:0 },
+    { word:"yesterday", phonetic:"/ˈjestədeɪ/", meaning:"n./adv. 昨天", example:"I saw him yesterday.", root:"基础时间", mastery:0 },
+    { word:"morning", phonetic:"/ˈmɔːnɪŋ/", meaning:"n. 早上", example:"Good morning!", root:"基础时间", mastery:0 },
+    { word:"evening", phonetic:"/ˈiːvnɪŋ/", meaning:"n. 晚上", example:"Good evening!", root:"基础时间", mastery:0 },
+    { word:"night", phonetic:"/naɪt/", meaning:"n. 夜晚", example:"Good night!", root:"基础时间", mastery:0 },
+    { word:"year", phonetic:"/jɪə(r)/", meaning:"n. 年", example:"Happy New Year!", root:"基础时间", mastery:0 },
+    { word:"month", phonetic:"/mʌnθ/", meaning:"n. 月", example:"There are twelve months in a year.", root:"基础时间", mastery:0 },
+    // ---- 家庭与人物 ----
+    { word:"family", phonetic:"/ˈfæməli/", meaning:"n. 家庭；家人", example:"I love my family.", root:"基础名词", mastery:0 },
+    { word:"friend", phonetic:"/frend/", meaning:"n. 朋友", example:"She is my best friend.", root:"基础名词", mastery:0 },
+    { word:"father", phonetic:"/ˈfɑːðə(r)/", meaning:"n. 父亲", example:"My father is a doctor.", root:"基础名词", mastery:0 },
+    { word:"mother", phonetic:"/ˈmʌðə(r)/", meaning:"n. 母亲", example:"My mother cooks well.", root:"基础名词", mastery:0 },
+    { word:"brother", phonetic:"/ˈbrʌðə(r)/", meaning:"n. 兄弟", example:"I have one brother.", root:"基础名词", mastery:0 },
+    { word:"sister", phonetic:"/ˈsɪstə(r)/", meaning:"n. 姐妹", example:"My sister is older than me.", root:"基础名词", mastery:0 },
+    { word:"teacher", phonetic:"/ˈtiːtʃə(r)/", meaning:"n. 老师", example:"The teacher is kind.", root:"teach(教) + er(人)", mastery:0 },
+    { word:"student", phonetic:"/ˈstjuːdnt/", meaning:"n. 学生", example:"I am a student.", root:"stud(学习) + ent(人)", mastery:0 },
+    { word:"name", phonetic:"/neɪm/", meaning:"n. 名字", example:"What's your name?", root:"基础名词", mastery:0 },
+    { word:"school", phonetic:"/skuːl/", meaning:"n. 学校", example:"I go to school by bus.", root:"基础名词", mastery:0 },
+  ],
+  core: [
+    { word:"abandon", phonetic:"/əˈbændən/", meaning:"v. 放弃；抛弃", example:"He abandoned his old car.", root:"a-(离开) + bandon(控制)", mastery:0 },
+    { word:"benefit", phonetic:"/ˈbenɪfɪt/", meaning:"n./v. 利益；受益", example:"Regular exercise has many benefits.", root:"bene-(好) + fit(做)", mastery:0 },
+    { word:"contribute", phonetic:"/kənˈtrɪbjuːt/", meaning:"v. 贡献；捐献", example:"She contributed to the project.", root:"con-(共同) + tribute(给)", mastery:0 },
+    { word:"demonstrate", phonetic:"/ˈdemənstreɪt/", meaning:"v. 证明；演示", example:"The experiment demonstrated the theory.", root:"de-(加强) + monstr(展示) + ate", mastery:0 },
+    { word:"eliminate", phonetic:"/ɪˈlɪmɪneɪt/", meaning:"v. 消除；排除", example:"We need to eliminate all errors.", root:"e-(出) + limin(门槛) + ate", mastery:0 },
+    { word:"fundamental", phonetic:"/ˌfʌndəˈmentl/", meaning:"adj. 基本的；根本的", example:"This is a fundamental principle.", root:"fund(基础) + ament + al", mastery:0 },
+    { word:"generate", phonetic:"/ˈdʒenəreɪt/", meaning:"v. 产生；发生", example:"Solar panels generate electricity.", root:"gener(产生) + ate", mastery:0 },
+    { word:"hypothesis", phonetic:"/haɪˈpɒθəsɪs/", meaning:"n. 假设；假说", example:"We need to test this hypothesis.", root:"hypo-(下面) + thesis(放置)", mastery:0 },
+    { word:"inevitable", phonetic:"/ɪnˈevɪtəbl/", meaning:"adj. 不可避免的", example:"Change is inevitable.", root:"in-(不) + evit(避免) + able", mastery:0 },
+    { word:"justify", phonetic:"/ˈdʒʌstɪfaɪ/", meaning:"v. 证明…正当", example:"How can you justify such behavior?", root:"just(公正) + ify(使…)", mastery:0 },
+    { word:"knowledge", phonetic:"/ˈnɒlɪdʒ/", meaning:"n. 知识；了解", example:"Knowledge is power.", root:"know + ledge", mastery:0 },
+    { word:"legitimate", phonetic:"/lɪˈdʒɪtɪmət/", meaning:"adj. 合法的；正当的", example:"That's a legitimate question.", root:"leg(法律) + itim + ate", mastery:0 },
+    { word:"manifest", phonetic:"/ˈmænɪfest/", meaning:"v./adj. 显示；明显的", example:"The symptoms manifest quickly.", root:"mani(手) + fest(敲)", mastery:0 },
+    { word:"notion", phonetic:"/ˈnəʊʃn/", meaning:"n. 概念；观念", example:"I reject that notion.", root:"not(知道) + ion", mastery:0 },
+    { word:"obstacle", phonetic:"/ˈɒbstəkl/", meaning:"n. 障碍；阻碍", example:"Lack of money is an obstacle.", root:"ob-(反对) + st(站) + acle", mastery:0 },
+  ],
+  junior: [
+    // ===== 初中七年级上 =====
+    { word:"hello", phonetic:"/həˈləʊ/", meaning:"interj. 你好", example:"Hello! How are you?", root:"基础问候", mastery:0 },
+    { word:"friend", phonetic:"/frend/", meaning:"n. 朋友", example:"She is my best friend.", root:"基础名词", mastery:0 },
+    { word:"family", phonetic:"/ˈfæməli/", meaning:"n. 家庭；家人", example:"I love my family.", root:"基础名词", mastery:0 },
+    { word:"school", phonetic:"/skuːl/", meaning:"n. 学校", example:"I go to school by bus.", root:"基础名词", mastery:0 },
+    { word:"teacher", phonetic:"/ˈtiːtʃə(r)/", meaning:"n. 老师", example:"Our teacher is very kind.", root:"teach(教) + er(人)", mastery:0 },
+    { word:"student", phonetic:"/ˈstjuːdnt/", meaning:"n. 学生", example:"I am a student.", root:"stud(学习) + ent(人)", mastery:0 },
+    { word:"favorite", phonetic:"/ˈfeɪvərɪt/", meaning:"adj. 最喜欢的", example:"What's your favorite color?", root:"favor(喜爱) + ite", mastery:0 },
+    { word:"subject", phonetic:"/ˈsʌbdʒɪkt/", meaning:"n. 科目；主题", example:"My favorite subject is English.", root:"sub-(下面) + ject(投掷)", mastery:0 },
+    { word:"breakfast", phonetic:"/ˈbrekfəst/", meaning:"n. 早餐", example:"I have breakfast at 7 a.m.", root:"break(打破) + fast(禁食)", mastery:0 },
+    { word:"vegetable", phonetic:"/ˈvedʒtəbl/", meaning:"n. 蔬菜", example:"Eat more vegetables.", root:"veget(生机) + able", mastery:0 },
+    { word:"healthy", phonetic:"/ˈhelθi/", meaning:"adj. 健康的", example:"Healthy food is important.", root:"health(健康) + y", mastery:0 },
+    { word:"exercise", phonetic:"/ˈeksəsaɪz/", meaning:"n./v. 锻炼；练习", example:"I exercise every day.", root:"ex-(出) + erc(保持) + ise", mastery:0 },
+    { word:"clothes", phonetic:"/kləʊðz/", meaning:"n. 衣服", example:"Put on your clothes.", root:"基础名词", mastery:0 },
+    { word:"price", phonetic:"/praɪs/", meaning:"n. 价格", example:"What's the price of this book?", root:"基础名词", mastery:0 },
+    { word:"birthday", phonetic:"/ˈbɜːθdeɪ/", meaning:"n. 生日", example:"Happy birthday to you!", root:"birth(出生) + day(天)", mastery:0 },
+    // ===== 初中七年级下 =====
+    { word:"guitar", phonetic:"/ɡɪˈtɑː(r)/", meaning:"n. 吉他", example:"She can play the guitar.", root:"基础名词", mastery:0 },
+    { word:"swim", phonetic:"/swɪm/", meaning:"v. 游泳", example:"I like to swim in summer.", root:"基础动词", mastery:0 },
+    { word:"usually", phonetic:"/ˈjuːʒuəli/", meaning:"adv. 通常", example:"I usually get up at six.", root:"usual(平常) + ly", mastery:0 },
+    { word:"shower", phonetic:"/ˈʃaʊə(r)/", meaning:"n. 淋浴；阵雨", example:"I take a shower every morning.", root:"基础名词", mastery:0 },
+    { word:"homework", phonetic:"/ˈhəʊmwɜːk/", meaning:"n. 家庭作业", example:"I do my homework after dinner.", root:"home(家) + work(工作)", mastery:0 },
+    { word:"quarter", phonetic:"/ˈkwɔːtə(r)/", meaning:"n. 四分之一；一刻钟", example:"It's a quarter past three.", root:"基础名词", mastery:0 },
+    { word:"village", phonetic:"/ˈvɪlɪdʒ/", meaning:"n. 村庄", example:"She lives in a small village.", root:"基础名词", mastery:0 },
+    { word:"bridge", phonetic:"/brɪdʒ/", meaning:"n. 桥", example:"The bridge is very old.", root:"基础名词", mastery:0 },
+    { word:"dangerous", phonetic:"/ˈdeɪndʒərəs/", meaning:"adj. 危险的", example:"It's dangerous to swim here.", root:"danger(危险) + ous", mastery:0 },
+    { word:"beautiful", phonetic:"/ˈbjuːtɪfl/", meaning:"adj. 美丽的", example:"What a beautiful day!", root:"beauty(美) + ful", mastery:0 },
+    { word:"weather", phonetic:"/ˈweðə(r)/", meaning:"n. 天气", example:"How's the weather today?", root:"基础名词", mastery:0 },
+    { word:"vacation", phonetic:"/vəˈkeɪʃn/", meaning:"n. 假期", example:"We're on vacation.", root:"vac(空) + ation", mastery:0 },
+    // ===== 初中八年级上 =====
+    { word:"difference", phonetic:"/ˈdɪfrəns/", meaning:"n. 差异；不同", example:"What's the difference?", root:"dif-(分开) + fer(带) + ence", mastery:0 },
+    { word:"however", phonetic:"/haʊˈevə(r)/", meaning:"adv. 然而；不过", example:"I'm tired. However, I'll finish it.", root:"how + ever(曾经)", mastery:0 },
+    { word:"although", phonetic:"/ɔːlˈðəʊ/", meaning:"conj. 虽然；尽管", example:"Although it rained, we went out.", root:"al-(完全) + though(尽管)", mastery:0 },
+    { word:"necessary", phonetic:"/ˈnesəsəri/", meaning:"adj. 必要的；必需的", example:"Sleep is necessary for health.", root:"ne-(不) + cess(让步) + ary", mastery:0 },
+    { word:"serious", phonetic:"/ˈsɪəriəs/", meaning:"adj. 严肃的；严重的", example:"Are you serious?", root:"基础形容词", mastery:0 },
+    { word:"talent", phonetic:"/ˈtælənt/", meaning:"n. 天赋；才能", example:"She has a talent for music.", root:"基础名词", mastery:0 },
+    { word:"competition", phonetic:"/ˌkɒmpəˈtɪʃn/", meaning:"n. 比赛；竞争", example:"He won first prize in the competition.", root:"com-(共同) + pet(追求) + ition", mastery:0 },
+    { word:"example", phonetic:"/ɪɡˈzɑːmpl/", meaning:"n. 例子；榜样", example:"For example, apples are healthy.", root:"ex-(出) + ampl(拿)", mastery:0 },
+    { word:"population", phonetic:"/ˌpɒpjuˈleɪʃn/", meaning:"n. 人口", example:"The population is growing.", root:"popul(人民) + ation", mastery:0 },
+    { word:"environment", phonetic:"/ɪnˈvaɪrənmənt/", meaning:"n. 环境", example:"Protect the environment.", root:"en-(使) + viron(围绕) + ment", mastery:0 },
+    { word:"tradition", phonetic:"/trəˈdɪʃn/", meaning:"n. 传统", example:"It's a Chinese tradition.", root:"tradit(传递) + ion", mastery:0 },
+    { word:"celebrate", phonetic:"/ˈselɪbreɪt/", meaning:"v. 庆祝", example:"We celebrate Spring Festival.", root:"celebr(荣誉) + ate", mastery:0 },
+    { word:"promise", phonetic:"/ˈprɒmɪs/", meaning:"n./v. 承诺；保证", example:"I promise to study hard.", root:"pro-(前) + mis(送)", mastery:0 },
+    { word:"improve", phonetic:"/ɪmˈpruːv/", meaning:"v. 改进；提高", example:"I want to improve my English.", root:"im-(进入) + prove(好处)", mastery:0 },
+    { word:"relationship", phonetic:"/rɪˈleɪʃnʃɪp/", meaning:"n. 关系", example:"They have a good relationship.", root:"relation(联系) + ship", mastery:0 },
+    // ===== 初中八年级下 =====
+    { word:"matter", phonetic:"/ˈmætə(r)/", meaning:"n. 事情；问题 v. 要紧", example:"What's the matter?", root:"基础名词", mastery:0 },
+    { word:"stomachache", phonetic:"/ˈstʌməkeɪk/", meaning:"n. 胃痛", example:"I have a stomachache.", root:"stomach(胃) + ache(痛)", mastery:0 },
+    { word:"passenger", phonetic:"/ˈpæsɪndʒə(r)/", meaning:"n. 乘客", example:"The passengers got off the bus.", root:"pass(通过) + enger", mastery:0 },
+    { word:"trouble", phonetic:"/ˈtrʌbl/", meaning:"n. 麻烦；问题", example:"I'm in trouble.", root:"基础名词", mastery:0 },
+    { word:"volunteer", phonetic:"/ˌvɒlənˈtɪə(r)/", meaning:"n./v. 志愿者；自愿", example:"I volunteer at the hospital.", root:"volunt(意愿) + eer(人)", mastery:0 },
+    { word:"satisfaction", phonetic:"/ˌsætɪsˈfækʃn/", meaning:"n. 满足；满意", example:"He smiled with satisfaction.", root:"satis(足够) + fact(做) + ion", mastery:0 },
+    { word:"imagine", phonetic:"/ɪˈmædʒɪn/", meaning:"v. 想象", example:"Imagine you are on the moon.", root:"imagin(形象) + e → image(像)", mastery:0 },
+    { word:"communication", phonetic:"/kəˌmjuːnɪˈkeɪʃn/", meaning:"n. 交流；通讯", example:"Good communication is important.", root:"commun(共同) + ic + ation", mastery:0 },
+    { word:"explain", phonetic:"/ɪkˈspleɪn/", meaning:"v. 解释；说明", example:"Can you explain this to me?", root:"ex-(出) + plain(清楚)", mastery:0 },
+    { word:"copy", phonetic:"/ˈkɒpi/", meaning:"v./n. 复制；抄本", example:"Please copy this text.", root:"基础动词", mastery:0 },
+    { word:"return", phonetic:"/rɪˈtɜːn/", meaning:"v. 归还；返回", example:"Return the book tomorrow.", root:"re-(回) + turn(转)", mastery:0 },
+    { word:"develop", phonetic:"/dɪˈveləp/", meaning:"v. 发展；开发", example:"The city is developing fast.", root:"de-(打开) + velop(包裹)", mastery:0 },
+    { word:"government", phonetic:"/ˈɡʌvənmənt/", meaning:"n. 政府", example:"The government made a new plan.", root:"govern(统治) + ment", mastery:0 },
+    { word:"achieve", phonetic:"/əˈtʃiːv/", meaning:"v. 达到；实现", example:"Work hard to achieve your dream.", root:"a-(去) + chieve(头) → 达到顶端", mastery:0 },
+    // ===== 初中九年级 =====
+    { word:"increase", phonetic:"/ɪnˈkriːs/", meaning:"v./n. 增加；增长", example:"The population continues to increase.", root:"in-(内) + crease(增长)", mastery:0 },
+    { word:"patient", phonetic:"/ˈpeɪʃnt/", meaning:"adj. 耐心的 n. 病人", example:"Be patient, please.", root:"pati(受苦) + ent", mastery:0 },
+    { word:"expression", phonetic:"/ɪkˈspreʃn/", meaning:"n. 表达；表情", example:"This expression means 'hello'.", root:"ex-(出) + press(压) + ion", mastery:0 },
+    { word:"discover", phonetic:"/dɪˈskʌvə(r)/", meaning:"v. 发现", example:"Columbus discovered America.", root:"dis-(去掉) + cover(覆盖)", mastery:0 },
+    { word:"secret", phonetic:"/ˈsiːkrɪt/", meaning:"n./adj. 秘密", example:"Keep it a secret.", root:"基础名词", mastery:0 },
+    { word:"grammar", phonetic:"/ˈɡræmə(r)/", meaning:"n. 语法", example:"English grammar is not easy.", root:"gram(写) + mar(学问)", mastery:0 },
+    { word:"repeat", phonetic:"/rɪˈpiːt/", meaning:"v. 重复", example:"Please repeat the question.", root:"re-(再) + peat(寻求)", mastery:0 },
+    { word:"note", phonetic:"/nəʊt/", meaning:"n. 笔记；便条", example:"Take notes in class.", root:"基础名词", mastery:0 },
+    { word:"partner", phonetic:"/ˈpɑːtnə(r)/", meaning:"n. 搭档；合伙人", example:"Work with your partner.", root:"part(部分) + ner", mastery:0 },
+    { word:"pattern", phonetic:"/ˈpætn/", meaning:"n. 模式；图案", example:"Find the pattern in the data.", root:"基础名词", mastery:0 },
+    { word:"protect", phonetic:"/prəˈtekt/", meaning:"v. 保护", example:"We should protect animals.", root:"pro-(前) + tect(遮盖)", mastery:0 },
+    { word:"recycle", phonetic:"/ˌriːˈsaɪkl/", meaning:"v. 回收利用", example:"Recycle your bottles and cans.", root:"re-(再) + cycle(循环)", mastery:0 },
+    { word:"afford", phonetic:"/əˈfɔːd/", meaning:"v. 买得起；承担得起", example:"I can't afford a new car.", root:"af-(向) + ford(前进)", mastery:0 },
+    { word:"purpose", phonetic:"/ˈpɜːpəs/", meaning:"n. 目的；意图", example:"What's the purpose of the meeting?", root:"pur-(向前) + pose(放置)", mastery:0 },
+    { word:"courage", phonetic:"/ˈkʌrɪdʒ/", meaning:"n. 勇气", example:"She showed great courage.", root:"cour(心) + age", mastery:0 },
+    { word:"regret", phonetic:"/rɪˈɡret/", meaning:"v./n. 遗憾；后悔", example:"I regret saying that.", root:"re-(回) + gret(哭)", mastery:0 },
+    { word:"overcome", phonetic:"/ˌəʊvəˈkʌm/", meaning:"v. 克服；战胜", example:"We can overcome any difficulty.", root:"over(越过) + come(来)", mastery:0 },
+  ],
+  senior: [
+    // ===== 高一必修知识点 =====
+    { word:"adapt", phonetic:"/əˈdæpt/", meaning:"v. 适应；改编", example:"You must adapt to the new environment.", root:"ad-(向) + apt(适合)", mastery:0 },
+    { word:"admire", phonetic:"/ədˈmaɪə(r)/", meaning:"v. 钦佩；羡慕", example:"I admire her courage.", root:"ad-(向) + mir(惊讶) + e", mastery:0 },
+    { word:"adopt", phonetic:"/əˈdɒpt/", meaning:"v. 采纳；收养", example:"They adopted a new method.", root:"ad-(向) + opt(选择)", mastery:0 },
+    { word:"anxious", phonetic:"/ˈæŋkʃəs/", meaning:"adj. 焦虑的；渴望的", example:"She was anxious about the exam.", root:"anx(紧缩) + ious", mastery:0 },
+    { word:"attitude", phonetic:"/ˈætɪtjuːd/", meaning:"n. 态度", example:"A positive attitude is important.", root:"att(适合) + itude(状态)", mastery:0 },
+    { word:"balance", phonetic:"/ˈbæləns/", meaning:"n./v. 平衡", example:"Keep a balance between work and life.", root:"bi-(双) + lance(盘)", mastery:0 },
+    { word:"barrier", phonetic:"/ˈbæriə(r)/", meaning:"n. 障碍；屏障", example:"Language can be a barrier.", root:"barr(栏) + ier", mastery:0 },
+    { word:"blame", phonetic:"/bleɪm/", meaning:"v./n. 责备；归咎", example:"Don't blame yourself.", root:"基础动词", mastery:0 },
+    { word:"campaign", phonetic:"/kæmˈpeɪn/", meaning:"n. 运动；战役", example:"An anti-smoking campaign.", root:"camp(田野) + aign", mastery:0 },
+    { word:"capable", phonetic:"/ˈkeɪpəbl/", meaning:"adj. 有能力的", example:"She is capable of doing it.", root:"cap(抓住) + able", mastery:0 },
+    { word:"concern", phonetic:"/kənˈsɜːn/", meaning:"v./n. 关心；涉及", example:"This concerns all of us.", root:"con-(共同) + cern(分离)", mastery:0 },
+    { word:"confident", phonetic:"/ˈkɒnfɪdənt/", meaning:"adj. 自信的", example:"Be confident in yourself.", root:"con-(完全) + fid(信任) + ent", mastery:0 },
+    { word:"conscious", phonetic:"/ˈkɒnʃəs/", meaning:"adj. 有意识的；自觉的", example:"She was conscious of the danger.", root:"con-(共同) + sci(知道) + ous", mastery:0 },
+    { word:"consequence", phonetic:"/ˈkɒnsɪkwəns/", meaning:"n. 结果；后果", example:"Think about the consequences.", root:"con-(共同) + sequ(跟随) + ence", mastery:0 },
+    { word:"constant", phonetic:"/ˈkɒnstənt/", meaning:"adj. 不断的；恒定的", example:"Constant practice makes perfect.", root:"con-(共同) + st(站) + ant", mastery:0 },
+    // ===== 高二必修知识点 =====
+    { word:"debate", phonetic:"/dɪˈbeɪt/", meaning:"n./v. 辩论；争论", example:"We had a heated debate.", root:"de-(向下) + bat(打) + e", mastery:0 },
+    { word:"decline", phonetic:"/dɪˈklaɪn/", meaning:"v./n. 下降；婉拒", example:"The population is declining.", root:"de-(向下) + clin(倾斜) + e", mastery:0 },
+    { word:"deserve", phonetic:"/dɪˈzɜːv/", meaning:"v. 值得；应得", example:"You deserve a rest.", root:"de-(完全) + serv(服务) + e", mastery:0 },
+    { word:"distinguish", phonetic:"/dɪˈstɪŋɡwɪʃ/", meaning:"v. 区分；辨别", example:"Can you distinguish the two?", root:"di-(分开) + stingu(刺) + ish", mastery:0 },
+    { word:"efficient", phonetic:"/ɪˈfɪʃnt/", meaning:"adj. 高效的", example:"This method is very efficient.", root:"ef-(出) + fic(做) + ient", mastery:0 },
+    { word:"emerge", phonetic:"/ɪˈmɜːdʒ/", meaning:"v. 出现；浮现", example:"A new idea emerged.", root:"e-(出) + merg(浸入) + e", mastery:0 },
+    { word:"emphasize", phonetic:"/ˈemfəsaɪz/", meaning:"v. 强调", example:"I want to emphasize this point.", root:"em-(进入) + phas(显示) + ize", mastery:0 },
+    { word:"evaluate", phonetic:"/ɪˈvæljueɪt/", meaning:"v. 评估；评价", example:"We need to evaluate the results.", root:"e-(出) + valu(价值) + ate", mastery:0 },
+    { word:"evidence", phonetic:"/ˈevɪdəns/", meaning:"n. 证据；证明", example:"There is no evidence of that.", root:"e-(出) + vid(看) + ence", mastery:0 },
+    { word:"exhaust", phonetic:"/ɪɡˈzɔːst/", meaning:"v. 耗尽；使筋疲力尽", example:"The work exhausted me.", root:"ex-(出) + haust(抽)", mastery:0 },
+    { word:"exposure", phonetic:"/ɪkˈspəʊʒə(r)/", meaning:"n. 暴露；接触", example:"Exposure to English helps learning.", root:"ex-(出) + pos(放) + ure", mastery:0 },
+    { word:"flexible", phonetic:"/ˈfleksəbl/", meaning:"adj. 灵活的；可弯曲的", example:"Be flexible in your approach.", root:"flex(弯曲) + ible", mastery:0 },
+    { word:"guarantee", phonetic:"/ˌɡærənˈtiː/", meaning:"v./n. 保证；担保", example:"I guarantee you'll pass.", root:"guar(看守) + antee", mastery:0 },
+    { word:"identity", phonetic:"/aɪˈdentəti/", meaning:"n. 身份；同一性", example:"Please show your identity card.", root:"ident(相同) + ity", mastery:0 },
+    { word:"independent", phonetic:"/ˌɪndɪˈpendənt/", meaning:"adj. 独立的", example:"She is very independent.", root:"in-(不) + de-(向下) + pend(挂) + ent", mastery:0 },
+    // ===== 高三必修/高考高频 =====
+    { word:"acknowledge", phonetic:"/əkˈnɒlɪdʒ/", meaning:"v. 承认；致谢", example:"He acknowledged his mistake.", root:"ac-(向) + know(知道) + ledge", mastery:0 },
+    { word:"anticipate", phonetic:"/ænˈtɪsɪpeɪt/", meaning:"v. 预期；期望", example:"We anticipate a good result.", root:"anti-(前) + cip(抓) + ate", mastery:0 },
+    { word:"apparent", phonetic:"/əˈpærənt/", meaning:"adj. 明显的；表面上的", example:"It was apparent that he was lying.", root:"ap-(向) + par(出现) + ent", mastery:0 },
+    { word:"arbitrary", phonetic:"/ˈɑːbɪtrəri/", meaning:"adj. 任意的；武断的", example:"That's an arbitrary decision.", root:"arbitr(判断) + ary", mastery:0 },
+    { word:"compensate", phonetic:"/ˈkɒmpenseɪt/", meaning:"v. 补偿；赔偿", example:"The company compensated the workers.", root:"com-(共同) + pens(称量) + ate", mastery:0 },
+    { word:"comprehensive", phonetic:"/ˌkɒmprɪˈhensɪv/", meaning:"adj. 全面的；综合的", example:"A comprehensive review is needed.", root:"com-(完全) + prehend(抓住) + ive", mastery:0 },
+    { word:"contemplate", phonetic:"/ˈkɒntəmpleɪt/", meaning:"v. 沉思；凝视", example:"She contemplated her future.", root:"con-(共同) + templ(观察) + ate", mastery:0 },
+    { word:"controversial", phonetic:"/ˌkɒntrəˈvɜːʃl/", meaning:"adj. 有争议的", example:"This is a controversial topic.", root:"contra-(相反) + vers(转) + ial", mastery:0 },
+    { word:"cultivate", phonetic:"/ˈkʌltɪveɪt/", meaning:"v. 培养；耕种", example:"Cultivate good study habits.", root:"cultiv(耕种) + ate", mastery:0 },
+    { word:"dedicate", phonetic:"/ˈdedɪkeɪt/", meaning:"v. 致力于；奉献", example:"She dedicated her life to science.", root:"de-(加强) + dic(说) + ate", mastery:0 },
+    { word:"discriminate", phonetic:"/dɪˈskrɪmɪneɪt/", meaning:"v. 歧视；辨别", example:"We should not discriminate.", root:"dis-(分开) + crimin(判断) + ate", mastery:0 },
+    { word:"dominant", phonetic:"/ˈdɒmɪnənt/", meaning:"adj. 占主导的；支配的", example:"English is the dominant language.", root:"domin(统治) + ant", mastery:0 },
+    { word:"elaborate", phonetic:"/ɪˈlæbərət/", meaning:"adj./v. 精心的；详述", example:"Could you elaborate on that?", root:"e-(出) + labor(劳动) + ate", mastery:0 },
+    { word:"entitle", phonetic:"/ɪnˈtaɪtl/", meaning:"v. 使有权；命名", example:"You are entitled to a refund.", root:"en-(使) + title(标题)", mastery:0 },
+    { word:"equivalent", phonetic:"/ɪˈkwɪvələnt/", meaning:"adj./n. 等价的；等值物", example:"One dollar is equivalent to seven yuan.", root:"equi(平等) + val(价值) + ent", mastery:0 },
+    { word:"explicit", phonetic:"/ɪkˈsplɪsɪt/", meaning:"adj. 明确的；清楚的", example:"Give explicit instructions.", root:"ex-(出) + plic(折叠) + it", mastery:0 },
+    { word:"fascinate", phonetic:"/ˈfæsɪneɪt/", meaning:"v. 迷住；使着迷", example:"Science fascinates me.", root:"fascin(魔力) + ate", mastery:0 },
+    { word:"frustrate", phonetic:"/frʌˈstreɪt/", meaning:"v. 使沮丧；挫败", example:"Don't let it frustrate you.", root:"frustr(徒劳) + ate", mastery:0 },
+    { word:"genuine", phonetic:"/ˈdʒenjuɪn/", meaning:"adj. 真正的；真诚的", example:"She has a genuine smile.", root:"genu(产生) + ine", mastery:0 },
+    { word:"implement", phonetic:"/ˈɪmplɪment/", meaning:"v./n. 实施；工具", example:"Implement the plan immediately.", root:"im-(内) + ple(填满) + ment", mastery:0 },
+    { word:"inevitable", phonetic:"/ɪnˈevɪtəbl/", meaning:"adj. 不可避免的", example:"Change is inevitable.", root:"in-(不) + evit(避免) + able", mastery:0 },
+    { word:"interpret", phonetic:"/ɪnˈtɜːprɪt/", meaning:"v. 解释；口译", example:"How do you interpret this data?", root:"inter-(之间) + pret(表达)", mastery:0 },
+    { word:"legitimate", phonetic:"/lɪˈdʒɪtɪmət/", meaning:"adj. 合法的；正当的", example:"That's a legitimate question.", root:"leg(法律) + itim + ate", mastery:0 },
+    { word:"negotiate", phonetic:"/nɪˈɡəʊʃieɪt/", meaning:"v. 谈判；协商", example:"We need to negotiate a deal.", root:"neg(不) + otium(休闲) + ate", mastery:0 },
+    { word:"obligation", phonetic:"/ˌɒblɪˈɡeɪʃn/", meaning:"n. 义务；责任", example:"You have an obligation to tell the truth.", root:"ob-(向) + lig(绑) + ation", mastery:0 },
+    { word:"perceive", phonetic:"/pəˈsiːv/", meaning:"v. 感知；察觉", example:"I perceived a change in her mood.", root:"per-(完全) + ceiv(抓住) + e", mastery:0 },
+    { word:"phenomenon", phonetic:"/fɪˈnɒmɪnən/", meaning:"n. 现象", example:"It's a natural phenomenon.", root:"phen(显示) + omen(征兆) + on", mastery:0 },
+    { word:"prejudice", phonetic:"/ˈpredʒʊdɪs/", meaning:"n. 偏见", example:"We should fight against prejudice.", root:"pre-(前) + jud(判断) + ice", mastery:0 },
+    { word:"privilege", phonetic:"/ˈprɪvəlɪdʒ/", meaning:"n. 特权；荣幸", example:"It's a privilege to be here.", root:"privi(私人) + lege(法律)", mastery:0 },
+    { word:"proportion", phonetic:"/prəˈpɔːʃn/", meaning:"n. 比例；部分", example:"A large proportion of students passed.", root:"pro-(前) + port(部分) + ion", mastery:0 },
+    { word:"sacrifice", phonetic:"/ˈsækrɪfaɪs/", meaning:"n./v. 牺牲；献祭", example:"Parents sacrifice a lot for their children.", root:"sacr(神圣) + ifice(做)", mastery:0 },
+    { word:"substantial", phonetic:"/səbˈstænʃl/", meaning:"adj. 大量的；实质的", example:"We made substantial progress.", root:"sub(下面) + st(站) + ant + ial", mastery:0 },
+    { word:"sympathy", phonetic:"/ˈsɪmpəθi/", meaning:"n. 同情；赞同", example:"I have sympathy for the victims.", root:"sym-(共同) + path(感情) + y", mastery:0 },
+    { word:"temporary", phonetic:"/ˈtemprəri/", meaning:"adj. 临时的；暂时的", example:"This is only a temporary solution.", root:"tempor(时间) + ary", mastery:0 },
+    { word:"thorough", phonetic:"/ˈθʌrə/", meaning:"adj. 彻底的；详尽的", example:"We need a thorough investigation.", root:"through(通过) → thorough", mastery:0 },
+    { word:"tolerance", phonetic:"/ˈtɒlərəns/", meaning:"n. 容忍；宽容", example:"We need more tolerance in society.", root:"toler(忍受) + ance", mastery:0 },
+    { word:"transform", phonetic:"/trænsˈfɔːm/", meaning:"v. 转变；改造", example:"Technology can transform education.", root:"trans-(跨越) + form(形状)", mastery:0 },
+    { word:"ultimate", phonetic:"/ˈʌltɪmət/", meaning:"adj. 最终的；根本的", example:"The ultimate goal is peace.", root:"ultim(最后) + ate", mastery:0 },
+    { word:"voluntary", phonetic:"/ˈvɒləntri/", meaning:"adj. 自愿的；志愿的", example:"Participation is voluntary.", root:"volunt(意愿) + ary", mastery:0 },
+  ],
+  business: [
+    { word:"acquisition", phonetic:"/ˌækwɪˈzɪʃn/", meaning:"n. 收购；获得", example:"The acquisition was worth $5 billion.", root:"ac-(向) + quis(寻求) + ition", mastery:0 },
+    { word:"benchmark", phonetic:"/ˈbentʃmɑːk/", meaning:"n. 基准；标杆", example:"This sets a new benchmark for the industry.", root:"bench(长椅) + mark(标记)", mastery:0 },
+    { word:"compliance", phonetic:"/kəmˈplaɪəns/", meaning:"n. 合规；遵从", example:"We must ensure compliance with regulations.", root:"com-(共同) + pli(折叠) + ance", mastery:0 },
+    { word:"diversify", phonetic:"/daɪˈvɜːsɪfaɪ/", meaning:"v. 多元化；分散投资", example:"We should diversify our portfolio.", root:"divers(不同) + ify", mastery:0 },
+    { word:"equity", phonetic:"/ˈekwəti/", meaning:"n. 股权；公平", example:"The company offers equity to employees.", root:"equ(平等) + ity", mastery:0 },
+    { word:"franchise", phonetic:"/ˈfræntʃaɪz/", meaning:"n. 特许经营权", example:"They operate under a franchise agreement.", root:"franc(自由) + hise", mastery:0 },
+    { word:"leverage", phonetic:"/ˈliːvərɪdʒ/", meaning:"n./v. 杠杆；利用", example:"We can leverage our network.", root:"lever(杠杆) + age", mastery:0 },
+    { word:"merger", phonetic:"/ˈmɜːdʒə(r)/", meaning:"n. 合并", example:"The merger created a market leader.", root:"merg(浸入) + er", mastery:0 },
+    { word:"outsource", phonetic:"/ˈaʊtsɔːs/", meaning:"v. 外包", example:"They outsourced their IT department.", root:"out(外) + source(来源)", mastery:0 },
+    { word:"turnover", phonetic:"/ˈtɜːnəʊvə(r)/", meaning:"n. 营业额；人员流动", example:"Staff turnover is high this year.", root:"turn(转) + over(过)", mastery:0 },
+  ],
+  ielts: [
+    { word:"accommodate", phonetic:"/əˈkɒmədeɪt/", meaning:"v. 容纳；适应", example:"The hotel can accommodate 500 guests.", root:"ac-(向) + com(共同) + mod(模式) + ate", mastery:0 },
+    { word:"controversy", phonetic:"/ˈkɒntrəvɜːsi/", meaning:"n. 争议；论战", example:"The policy caused great controversy.", root:"contra-(相反) + vers(转) + y", mastery:0 },
+    { word:"deteriorate", phonetic:"/dɪˈtɪəriəreɪt/", meaning:"v. 恶化；变坏", example:"His health continued to deteriorate.", root:"de-(向下) + terior(更坏) + ate", mastery:0 },
+    { word:"elaborate", phonetic:"/ɪˈlæbərət/", meaning:"adj./v. 精心的；详述", example:"Could you elaborate on that point?", root:"e-(出) + labor(劳动) + ate", mastery:0 },
+    { word:"fluctuate", phonetic:"/ˈflʌktʃueɪt/", meaning:"v. 波动；变动", example:"Oil prices fluctuate constantly.", root:"fluct(流动) + uate", mastery:0 },
+    { word:"implement", phonetic:"/ˈɪmplɪment/", meaning:"v./n. 实施；工具", example:"We plan to implement the changes next month.", root:"im-(内) + ple(填满) + ment", mastery:0 },
+    { word:"predominant", phonetic:"/prɪˈdɒmɪnənt/", meaning:"adj. 主要的；占主导的", example:"English is the predominant language.", root:"pre-(前) + domin(统治) + ant", mastery:0 },
+    { word:"subsequent", phonetic:"/ˈsʌbsɪkwənt/", meaning:"adj. 随后的；后续的", example:"Subsequent events proved him right.", root:"sub(下面) + sequ(跟随) + ent", mastery:0 },
+    { word:"tremendous", phonetic:"/trɪˈmendəs/", meaning:"adj. 巨大的；极好的", example:"She made a tremendous effort.", root:"trem(颤抖) + end + ous", mastery:0 },
+    { word:"undermine", phonetic:"/ˌʌndəˈmaɪn/", meaning:"v. 破坏；逐渐削弱", example:"Rumors can undermine public trust.", root:"under(下面) + mine(挖)", mastery:0 },
+  ]
+};
+
+// 语法题库
+const GRAMMAR_DB = {
+  tense: [
+    { q:"By the time we arrived, the movie ___.", options:["has started","had started","started","starts"], answer:1, explain:"主句用过去完成时，表示在arrived之前已经发生的动作。" },
+    { q:"She ___ English for five years by next June.", options:["will study","will have studied","has studied","studies"], answer:1, explain:"by next June 表示到将来某时间点为止，用将来完成时。" },
+    { q:"Look! The children ___ in the park.", options:["play","are playing","played","have played"], answer:1, explain:"Look! 提示正在发生的动作，用现在进行时。" },
+    { q:"I ___ him since 2020.", options:["didn't see","haven't seen","don't see","won't see"], answer:1, explain:"since 2020 表示从过去持续到现在，用现在完成时。" },
+    { q:"Water ___ at 100 degrees Celsius.", options:["boils","is boiling","boiled","has boiled"], answer:0, explain:"客观真理/科学事实用一般现在时。" },
+    { q:"He ___ to school when it started raining.", options:["walks","was walking","has walked","walked"], answer:1, explain:"when 突然发生的事件打断正在进行的事，用过去进行时。" },
+  ],
+  clause: [
+    { q:"The man ___ is standing there is my teacher.", options:["which","who","whom","whose"], answer:1, explain:"先行词是人，在从句中作主语，用who。" },
+    { q:"This is the book ___ I borrowed from the library.", options:["which","who","whom","whose"], answer:0, explain:"先行词是物，在从句中作宾语，用which。" },
+    { q:"___ he is young, he is very experienced.", options:["Although","Because","If","When"], answer:0, explain:"虽然年轻但有经验，让步状语从句用Although。" },
+    { q:"I wonder ___ he will come tomorrow.", options:["that","what","whether","which"], answer:2, explain:"是否来，用whether引导宾语从句。" },
+    { q:"The reason ___ he was late is unknown.", options:["which","why","when","where"], answer:1, explain:"reason 后的定语从句用why引导。" },
+    { q:"This is the place ___ we first met.", options:["which","why","when","where"], answer:3, explain:"先行词是地点，在从句中作地点状语，用where。" },
+  ],
+  voice: [
+    { q:"The letter ___ yesterday.", options:["was sent","sent","is sent","has sent"], answer:0, explain:"信是被寄出的，用被动语态 + yesterday用过去时。" },
+    { q:"English ___ in many countries.", options:["speaks","is spoken","spoke","is speaking"], answer:1, explain:"英语被说，用一般现在时被动语态。" },
+    { q:"The project ___ by the end of this month.", options:["will complete","will be completed","completes","is completed"], answer:1, explain:"项目被完成，将来时被动语态。" },
+    { q:"The window ___ by the boy yesterday.", options:["was broken","broke","is broken","has broken"], answer:0, explain:"窗户被打破，yesterday用过去时被动。" },
+    { q:"A new school ___ in our town next year.", options:["builds","will be built","is built","was built"], answer:1, explain:"学校被建造，next year用将来时被动。" },
+  ],
+  subjunctive: [
+    { q:"If I ___ you, I would accept the offer.", options:["am","was","were","be"], answer:2, explain:"虚拟语气中be动词统一用were（与现在事实相反）。" },
+    { q:"He suggested that she ___ harder.", options:["study","studies","studied","studying"], answer:0, explain:"suggest 后的从句用 should + 动词原形，should可省略。" },
+    { q:"If he had come earlier, he ___ the beginning.", options:["would see","would have seen","saw","had seen"], answer:1, explain:"与过去事实相反：if had done, would have done。" },
+    { q:"It is essential that every student ___ on time.", options:["is","be","was","were"], answer:1, explain:"It is essential that 后用 should + 动词原形，should可省。" },
+    { q:"I wish I ___ a bird.", options:["am","was","were","be"], answer:2, explain:"wish 后用虚拟语气，be动词用were。" },
+    { q:"Without your help, I ___ the exam.", options:["wouldn't pass","won't pass","wouldn't have passed","didn't pass"], answer:2, explain:"without your help 暗示过去，用wouldn't have done。" },
+  ]
+};
+
+// 听力材料
+const LISTENING_DB = [
+  { title:"日常对话 — 问路", text:"Excuse me, could you tell me how to get to the nearest subway station? Sure, go straight down this road for two blocks, then turn left at the traffic lights. You'll see it on your right. It's about a five-minute walk. Thank you very much! You're welcome.", level:"初级", speed:0.9 },
+  { title:"商务场景 — 会议讨论", text:"Good morning everyone. Let's get started with today's agenda. First, we need to review the sales figures from last quarter. As you can see from the chart, our revenue increased by fifteen percent compared to the same period last year. However, we still face challenges in the Asian market. Any questions so far?", level:"中级", speed:1.0 },
+  { title:"学术讲座 — 气候变化", text:"Today I'd like to discuss the impact of climate change on marine ecosystems. Rising ocean temperatures have led to significant coral bleaching events across the Pacific. Furthermore, ocean acidification threatens the survival of shellfish populations, which form the base of many marine food chains. These changes have far-reaching consequences for both marine biodiversity and human communities that depend on fishing.", level:"高级", speed:1.0 },
+  { title:"新闻播报 — 科技创新", text:"In technology news today, a major breakthrough in artificial intelligence has been announced by researchers at a leading university. The new system can understand and generate human language with unprecedented accuracy. Experts say this could revolutionize how we interact with computers, though some have raised concerns about privacy and job displacement.", level:"中级", speed:1.0 },
+  { title:"旅游场景 — 预订酒店", text:"Hello, I'd like to book a room for two nights, please. We have a standard double room available at eighty dollars per night, and a deluxe suite at one hundred and fifty. Does the rate include breakfast? Yes, breakfast is included for both room types. I'll take the standard double, please. Could I have your name and credit card number to confirm the reservation?", level:"初级", speed:0.95 },
+];
+
+// 写作模板
+const WRITING_TEMPLATES = {
+  email: { prompt:"请写一封英文邮件，向你的经理申请一周的年假。", template:"Dear [Manager's Name],\n\nI am writing to request [duration] of annual leave from [start date] to [end date].\n\n[Reason - optional]\n\nI will ensure that all my current tasks are completed or handed over before my leave. [Colleague's Name] has agreed to cover any urgent matters during my absence.\n\nThank you for considering my request.\n\nBest regards,\n[Your Name]" },
+  essay: { prompt:"请就\"是否应该限制青少年使用社交媒体\"写一篇议论文。", template:"In recent years, there has been a growing debate about whether [topic]. While some argue that [viewpoint A], others believe that [viewpoint B]. In my opinion, [your position].\n\nOn one hand, [argument for A]. For example, [evidence]. Furthermore, [additional point].\n\nOn the other hand, [argument for B]. Research shows that [evidence]. Moreover, [additional point].\n\nIn conclusion, I believe that [restate position]. While [concession], it is clear that [final point]. Therefore, [call to action / recommendation]." },
+  letter: { prompt:"请写一封英文感谢信，感谢朋友在你困难时的帮助。", template:"Dear [Friend's Name],\n\nI am writing to express my sincere gratitude for [what they did]. Your kindness and support during [difficult time] meant the world to me.\n\nWhen [specific situation], you [what they specifically did]. This really helped me [how it helped].\n\nI will always remember your generosity. Please let me know if there is ever anything I can do to return the favor.\n\nWith warmest regards,\n[Your Name]" },
+  report: { prompt:"请写一份简短的工作进展报告。", template:"To: [Recipient]\nFrom: [Your Name]\nDate: [Date]\nSubject: Progress Report — [Project Name]\n\n1. Summary\n[One-paragraph overview of current status]\n\n2. Completed Tasks\n• [Task 1] — completed on [date]\n• [Task 2] — completed on [date]\n\n3. Ongoing Work\n• [Task 3] — expected completion: [date]\n• [Task 4] — expected completion: [date]\n\n4. Issues / Risks\n• [Issue description and proposed solution]\n\n5. Next Steps\n• [Planned action 1]\n• [Planned action 2]\n\n[Your Name]" },
+};
+
+// 常用表达
+const PHRASES = [
+  "In my opinion,", "On the other hand,", "Furthermore,", "However,",
+  "In addition,", "As a result,", "For example,", "In conclusion,",
+  "It is worth noting that", "According to", "Compared with",
+  "There is no doubt that", "It goes without saying that",
+  "From my perspective,", "Last but not least,", "To begin with,"
+];
+
+// 每日一句
+const DAILY_SENTENCES = [
+  { en:"The only way to do great work is to love what you do.", cn:"做伟大工作的唯一途径就是热爱你所做的事。—— 乔布斯" },
+  { en:"In the middle of difficulty lies opportunity.", cn:"困难之中蕴藏着机遇。—— 爱因斯坦" },
+  { en:"The best time to plant a tree was 20 years ago. The second best time is now.", cn:"种一棵树最好的时间是20年前，其次是现在。" },
+  { en:"Success is not final, failure is not fatal: it is the courage to continue that counts.", cn:"成功不是终点，失败也不是末日，继续前行的勇气才最重要。—— 丘吉尔" },
+  { en:"Education is the most powerful weapon which you can use to change the world.", cn:"教育是你可以用来改变世界的最强大的武器。—— 曼德拉" },
+  { en:"A journey of a thousand miles begins with a single step.", cn:"千里之行，始于足下。—— 老子" },
+  { en:"The secret of getting ahead is getting started.", cn:"领先的秘诀就是开始行动。—— 马克·吐温" },
+];
+
+// ==================== 状态管理 ====================
+let currentUser = null; // 当前登录用户
+let state = {
+  currentWordIndex: 0,
+  currentCategory: 'basic',
+  currentLevel: 'all',
+  grammarCat: 'tense',
+  grammarAnswered: false,
+  streak: 0,
+  checkinDates: [],
+  todayLearned: 0,
+  totalLearned: 0,
+  grammarStats: { total:0, correct:0 },
+  writings: [],
+  // 学习计划
+  goals: { vocab:10, grammar:5, listening:1, writing:1 },
+  mode: 'normal', // easy / normal / hard
+  customTasks: [],
+  todayProgress: { vocabDone:0, grammarDone:0, listeningDone:0, writingDone:0 },
+  skippedTasks: [],
+};
+
+// ==================== 用户认证系统 ====================
+function getUsers() {
+  return JSON.parse(localStorage.getItem('englishPro_users') || '{}');
+}
+function saveUsers(users) {
+  localStorage.setItem('englishPro_users', JSON.stringify(users));
+}
+function simpleHash(str) {
+  // 简单哈希（前端演示用，非安全加密）
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return 'h_' + Math.abs(hash).toString(36) + '_' + btoa(str).slice(0,8);
+}
+
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.toggle('active', t.dataset.auth === tab));
+  document.getElementById('loginForm').classList.toggle('active', tab === 'login');
+  document.getElementById('registerForm').classList.toggle('active', tab === 'register');
+  clearAuthMessages();
+}
+
+function clearAuthMessages() {
+  document.getElementById('authError').classList.remove('show');
+  document.getElementById('authSuccess').classList.remove('show');
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.classList.add('show');
+  document.getElementById('authSuccess').classList.remove('show');
+}
+
+function showAuthSuccess(msg) {
+  const el = document.getElementById('authSuccess');
+  el.textContent = msg;
+  el.classList.add('show');
+  document.getElementById('authError').classList.remove('show');
+}
+
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+  else { input.type = 'password'; btn.textContent = '👁️'; }
+}
+
+function checkPasswordStrength() {
+  const pwd = document.getElementById('regPassword').value;
+  const bar = document.getElementById('passwordStrengthBar');
+  let strength = 0;
+  if (pwd.length >= 6) strength++;
+  if (pwd.length >= 10) strength++;
+  if (/[A-Z]/.test(pwd)) strength++;
+  if (/[0-9]/.test(pwd)) strength++;
+  if (/[^A-Za-z0-9]/.test(pwd)) strength++;
+  const pct = Math.min(strength / 5 * 100, 100);
+  const color = strength <= 2 ? '#ef4444' : strength <= 3 ? '#f59e0b' : '#10b981';
+  bar.style.width = pct + '%';
+  bar.style.background = color;
+}
+
+function handleRegister() {
+  const username = document.getElementById('regUsername').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const password2 = document.getElementById('regPassword2').value;
+  
+  // 验证
+  if (!username || !email || !password) return showAuthError('请填写所有字段');
+  if (!/^[a-zA-Z0-9_\u4e00-\u9fa5]{2,20}$/.test(username)) return showAuthError('用户名需2-20个字符（字母/数字/下划线/中文）');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showAuthError('请输入有效邮箱地址');
+  if (password.length < 6) return showAuthError('密码至少6位');
+  if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) return showAuthError('密码需包含字母和数字');
+  if (password !== password2) return showAuthError('两次输入的密码不一致');
+  
+  const users = getUsers();
+  if (users[username]) return showAuthError('该用户名已被注册');
+  // 检查邮箱是否已存在
+  if (Object.values(users).some(u => u.email === email)) return showAuthError('该邮箱已被注册');
+  
+  // 创建用户
+  users[username] = {
+    username,
+    email,
+    passwordHash: simpleHash(password),
+    createdAt: new Date().toISOString(),
+    avatar: username.charAt(0).toUpperCase(),
+  };
+  saveUsers(users);
+  
+  showAuthSuccess('🎉 注册成功！请登录');
+  // 清空注册表单
+  document.getElementById('regUsername').value = '';
+  document.getElementById('regEmail').value = '';
+  document.getElementById('regPassword').value = '';
+  document.getElementById('regPassword2').value = '';
+  // 切到登录
+  setTimeout(() => switchAuthTab('login'), 1500);
+}
+
+function handleLogin() {
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  
+  if (!username || !password) return showAuthError('请输入用户名和密码');
+  
+  const users = getUsers();
+  const user = users[username];
+  if (!user) return showAuthError('用户名不存在');
+  if (user.passwordHash !== simpleHash(password)) return showAuthError('密码错误');
+  
+  loginAs(user);
+}
+
+function guestLogin() {
+  const guestUser = {
+    username: 'guest',
+    email: 'guest@englishpro.app',
+    passwordHash: '',
+    createdAt: new Date().toISOString(),
+    avatar: '👤',
+    isGuest: true,
+  };
+  loginAs(guestUser);
+}
+
+function loginAs(user) {
+  currentUser = user;
+  // 保存登录状态
+  const remember = document.getElementById('rememberMe')?.checked;
+  if (remember || user.isGuest) {
+    localStorage.setItem('englishPro_currentUser', user.username);
+  }
+  
+  // 更新UI
+  document.getElementById('authOverlay').classList.add('hidden');
+  document.getElementById('userMenu').style.display = 'flex';
+  document.getElementById('userAvatar').textContent = user.avatar || user.username.charAt(0).toUpperCase();
+  document.getElementById('userDisplayName').textContent = user.isGuest ? '游客' : user.username;
+  document.getElementById('udName').textContent = user.isGuest ? '游客模式' : user.username;
+  document.getElementById('udEmail').textContent = user.isGuest ? '数据仅保存在本地' : user.email;
+  
+  // 加载该用户的学习数据
+  loadUserState();
+  initApp();
+}
+
+function handleLogout() {
+  currentUser = null;
+  localStorage.removeItem('englishPro_currentUser');
+  document.getElementById('authOverlay').classList.remove('hidden');
+  document.getElementById('userMenu').style.display = 'none';
+  document.getElementById('userDropdown').classList.remove('show');
+  document.getElementById('loginUsername').value = '';
+  document.getElementById('loginPassword').value = '';
+  clearAuthMessages();
+}
+
+function toggleUserDropdown() {
+  document.getElementById('userDropdown').classList.toggle('show');
+}
+
+function showProfile() {
+  document.getElementById('userDropdown').classList.remove('show');
+  const u = currentUser;
+  const info = u.isGuest 
+    ? '👤 游客模式\n\n数据仅保存在本地浏览器中，退出后不会丢失，但换设备无法同步。'
+    : `👤 ${u.username}\n📧 ${u.email}\n📅 注册于 ${new Date(u.createdAt).toLocaleDateString('zh-CN')}`;
+  alert(info);
+}
+
+function resetMyData() {
+  document.getElementById('userDropdown').classList.remove('show');
+  if (!confirm('⚠️ 确定要重置所有学习数据吗？此操作不可恢复！')) return;
+  
+  // 重置单词掌握度
+  Object.values(WORDS_DB).forEach(cat => cat.forEach(w => w.mastery = 0));
+  // 重置状态
+  state.streak = 0;
+  state.checkinDates = [];
+  state.todayLearned = 0;
+  state.totalLearned = 0;
+  state.grammarStats = { total:0, correct:0 };
+  state.writings = [];
+  
+  saveState();
+  initApp();
+  alert('✅ 学习数据已重置');
+}
+
+// 点击其他地方关闭下拉菜单
+document.addEventListener('click', (e) => {
+  const dd = document.getElementById('userDropdown');
+  if (dd.classList.contains('show') && !e.target.closest('.user-menu') && !e.target.closest('.user-dropdown-btn')) {
+    dd.classList.remove('show');
+  }
+});
+
+// 回车键登录/注册
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !document.getElementById('authOverlay').classList.contains('hidden')) {
+    if (document.getElementById('loginForm').classList.contains('active')) handleLogin();
+    else handleRegister();
+  }
+});
+
+// 本地存储 — 支持多用户数据隔离
+function getStateKey() {
+  return currentUser ? `englishPro_state_${currentUser.username}` : 'englishPro_state';
+}
+
+function saveState() {
+  const s = {
+    ...state,
+    words: WORDS_DB,
+    lastStudyDate: new Date().toISOString().slice(0,10),
+  };
+  localStorage.setItem(getStateKey(), JSON.stringify(s));
+}
+
+function loadUserState() {
+  const saved = localStorage.getItem(getStateKey());
+  if (saved) {
+    const s = JSON.parse(saved);
+    // 恢复单词掌握度
+    if (s.words) {
+      Object.keys(s.words).forEach(cat => {
+        s.words[cat]?.forEach((w,i) => {
+          if (WORDS_DB[cat] && WORDS_DB[cat][i]) {
+            WORDS_DB[cat][i].mastery = w.mastery || 0;
+          }
+        });
+      });
+    }
+    state.streak = s.streak || 0;
+    state.checkinDates = s.checkinDates || [];
+    state.todayLearned = s.todayLearned || 0;
+    state.totalLearned = s.totalLearned || 0;
+    state.grammarStats = s.grammarStats || { total:0, correct:0 };
+    state.writings = s.writings || [];
+    state.currentWordIndex = 0;
+    state.currentCategory = s.currentCategory || 'basic';
+    state.currentLevel = s.currentLevel || 'all';
+    state.goals = s.goals || { vocab:10, grammar:5, listening:1, writing:1 };
+    state.mode = s.mode || 'normal';
+    state.customTasks = s.customTasks || [];
+    state.todayProgress = s.todayProgress || { vocabDone:0, grammarDone:0, listeningDone:0, writingDone:0 };
+    state.skippedTasks = s.skippedTasks || [];
+    // 检查是否是新的一天，重置今日进度
+    const lastDate = s.lastStudyDate || '';
+    const today = new Date().toISOString().slice(0,10);
+    if (lastDate !== today) {
+      state.todayProgress = { vocabDone:0, grammarDone:0, listeningDone:0, writingDone:0 };
+      state.skippedTasks = [];
+    }
+  } else {
+    // 新用户，重置所有单词掌握度
+    Object.values(WORDS_DB).forEach(cat => cat.forEach(w => w.mastery = 0));
+    state.streak = 0;
+    state.checkinDates = [];
+    state.todayLearned = 0;
+    state.totalLearned = 0;
+    state.grammarStats = { total:0, correct:0 };
+    state.writings = [];
+    state.goals = { vocab:10, grammar:5, listening:1, writing:1 };
+    state.mode = 'normal';
+    state.customTasks = [];
+    state.todayProgress = { vocabDone:0, grammarDone:0, listeningDone:0, writingDone:0 };
+    state.skippedTasks = [];
+  }
+  checkCheckin();
+}
+
+function loadState() {
+  // 已由 loadUserState 替代，保留空函数兼容
+}
+
+function checkCheckin() {
+  const today = new Date().toISOString().slice(0,10);
+  if (!state.checkinDates.includes(today)) {
+    // 计算连续天数
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+    if (state.checkinDates.includes(yesterday)) {
+      state.streak++;
+    } else if (state.checkinDates.length > 0) {
+      state.streak = 1;
+    } else {
+      state.streak = 1;
+    }
+    state.checkinDates.push(today);
+    state.totalDays = state.checkinDates.length;
+    saveState();
+  }
+  document.getElementById('streakCount').textContent = state.streak;
+}
+
+// ==================== 标签页切换 ====================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    
+    if (btn.dataset.tab === 'progress') renderProgress();
+    if (btn.dataset.tab === 'vocab') renderWordList();
+    if (btn.dataset.tab === 'plan') renderPlan();
+  });
+});
+
+// ==================== 学习计划 ====================
+function updateGoalDisplay(inputId, valId) {
+  document.getElementById(valId).textContent = document.getElementById(inputId).value;
+}
+
+function saveGoals() {
+  state.goals.vocab = parseInt(document.getElementById('goalVocab').value);
+  state.goals.grammar = parseInt(document.getElementById('goalGrammar').value);
+  state.goals.listening = parseInt(document.getElementById('goalListening').value);
+  state.goals.writing = parseInt(document.getElementById('goalWriting').value);
+  saveState();
+  renderPlan();
+  // 显示保存成功反馈
+  const btn = event.target;
+  const orig = btn.textContent;
+  btn.textContent = '✅ 已保存';
+  setTimeout(() => btn.textContent = orig, 1500);
+}
+
+function switchMode(mode) {
+  state.mode = mode;
+  document.querySelectorAll('[data-mode]').forEach(el => {
+    el.classList.toggle('active', el.dataset.mode === mode);
+  });
+  // 根据模式调整目标
+  const presets = {
+    easy: { vocab:5, grammar:3, listening:1, writing:1 },
+    normal: { vocab:10, grammar:5, listening:1, writing:1 },
+    hard: { vocab:25, grammar:10, listening:3, writing:2 },
+  };
+  const p = presets[mode];
+  state.goals = { ...p };
+  document.getElementById('goalVocab').value = p.vocab;
+  document.getElementById('goalVocabVal').textContent = p.vocab;
+  document.getElementById('goalGrammar').value = p.grammar;
+  document.getElementById('goalGrammarVal').textContent = p.grammar;
+  document.getElementById('goalListening').value = p.listening;
+  document.getElementById('goalListeningVal').textContent = p.listening;
+  document.getElementById('goalWriting').value = p.writing;
+  document.getElementById('goalWritingVal').textContent = p.writing;
+  saveState();
+  renderPlan();
+}
+
+function addCustomTask() {
+  const input = document.getElementById('customTaskInput');
+  const text = input.value.trim();
+  if (!text) return;
+  state.customTasks.push({ id: Date.now(), text, done: false });
+  input.value = '';
+  saveState();
+  renderPlan();
+}
+
+function toggleCustomTask(id) {
+  const task = state.customTasks.find(t => t.id === id);
+  if (task) task.done = !task.done;
+  saveState();
+  renderPlan();
+}
+
+function deleteCustomTask(id) {
+  state.customTasks = state.customTasks.filter(t => t.id !== id);
+  saveState();
+  renderPlan();
+}
+
+function skipTask(type) {
+  if (!state.skippedTasks.includes(type)) {
+    state.skippedTasks.push(type);
+  }
+  saveState();
+  renderPlan();
+}
+
+function unskipTask(type) {
+  state.skippedTasks = state.skippedTasks.filter(t => t !== type);
+  saveState();
+  renderPlan();
+}
+
+function renderPlan() {
+  const tp = state.todayProgress;
+  const g = state.goals;
+  
+  // 更新滑块
+  document.getElementById('goalVocab').value = g.vocab;
+  document.getElementById('goalVocabVal').textContent = g.vocab;
+  document.getElementById('goalGrammar').value = g.grammar;
+  document.getElementById('goalGrammarVal').textContent = g.grammar;
+  document.getElementById('goalListening').value = g.listening;
+  document.getElementById('goalListeningVal').textContent = g.listening;
+  document.getElementById('goalWriting').value = g.writing;
+  document.getElementById('goalWritingVal').textContent = g.writing;
+  
+  // 更新模式按钮
+  document.querySelectorAll('[data-mode]').forEach(el => {
+    el.classList.toggle('active', el.dataset.mode === state.mode);
+  });
+  
+  // 今日概览
+  const tasks = [
+    { type:'vocab', goal:g.vocab, done:tp.vocabDone },
+    { type:'grammar', goal:g.grammar, done:tp.grammarDone },
+    { type:'listening', goal:g.listening, done:tp.listeningDone },
+    { type:'writing', goal:g.writing, done:tp.writingDone },
+  ];
+  const totalTasks = tasks.length + state.customTasks.length;
+  const doneTasks = tasks.filter(t => t.done >= t.goal).length + state.customTasks.filter(t => t.done).length;
+  
+  document.getElementById('planTotal').textContent = totalTasks;
+  document.getElementById('planDone').textContent = doneTasks;
+  document.getElementById('planStreak').textContent = state.streak;
+  
+  // 智能建议
+  generateSmartSuggest(tasks);
+  
+  // 今日任务卡片
+  const taskDefs = [
+    { type:'vocab', icon:'📖', name:'背诵单词', desc:`学习 ${g.vocab} 个新单词`, goal:g.vocab, done:tp.vocabDone, color:'gp-primary', link:'vocab' },
+    { type:'grammar', icon:'✏️', name:'语法练习', desc:`完成 ${g.grammar} 道语法题`, goal:g.grammar, done:tp.grammarDone, color:'gp-accent', link:'grammar' },
+    { type:'listening', icon:'🎧', name:'听力训练', desc:`完成 ${g.listening} 段听力`, goal:g.listening, done:tp.listeningDone, color:'gp-success', link:'listening' },
+    { type:'writing', icon:'✍️', name:'写作练习', desc:`完成 ${g.writing} 篇写作`, goal:g.writing, done:tp.writingDone, color:'gp-primary', link:'writing' },
+  ];
+  
+  document.getElementById('planGoals').innerHTML = taskDefs.map(t => {
+    const pct = Math.min(100, t.goal > 0 ? Math.round(t.done / t.goal * 100) : 0);
+    const isDone = t.done >= t.goal;
+    const isSkipped = state.skippedTasks.includes(t.type);
+    const statusCls = isDone ? 'done' : isSkipped ? 'skipped' : pct > 0 ? 'active' : 'pending';
+    const statusText = isDone ? '✅ 已完成' : isSkipped ? '⏭️ 已跳过' : pct > 0 ? '进行中' : '未开始';
+    const cardCls = isDone ? 'completed' : pct > 0 ? 'in-progress' : '';
+    
+    return `<div class="goal-card ${cardCls}">
+      <div class="goal-top">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="goal-icon">${t.icon}</span>
+          <span class="goal-title">${t.name}</span>
+        </div>
+        <span class="goal-status-badge ${statusCls}">${statusText}</span>
+      </div>
+      <div class="goal-detail">${t.desc}</div>
+      <div class="goal-progress"><div class="goal-progress-fill ${t.color}" style="width:${pct}%"></div></div>
+      <div class="goal-stats"><span>${t.done} / ${t.goal}</span><span>${pct}%</span></div>
+      <div class="goal-actions">
+        ${!isDone && !isSkipped ? `<button class="btn btn-primary" onclick="goToTab('${t.link}')">去学习</button>` : ''}
+        ${!isDone && !isSkipped ? `<button class="btn btn-outline" onclick="skipTask('${t.type}')">跳过</button>` : ''}
+        ${isSkipped ? `<button class="btn btn-outline" onclick="unskipTask('${t.type}')">取消跳过</button>` : ''}
+        ${isDone ? `<button class="btn btn-success" onclick="goToTab('${t.link}')">继续学习</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  
+  // 时间线
+  const hour = new Date().getHours();
+  const timeSlots = [
+    { time:'06:00 - 08:00', label:'🌅 晨读时间', desc:'背单词效果最佳', active: hour >= 6 && hour < 8 },
+    { time:'08:00 - 12:00', label:'📚 上午学习', desc:'语法练习、阅读理解', active: hour >= 8 && hour < 12 },
+    { time:'12:00 - 14:00', label:'🎧 午间听力', desc:'听英语播客或材料', active: hour >= 12 && hour < 14 },
+    { time:'14:00 - 18:00', label:'✏️ 下午练习', desc:'写作和语法强化', active: hour >= 14 && hour < 18 },
+    { time:'18:00 - 20:00', label:'📖 晚间复习', desc:'回顾今日所学单词', active: hour >= 18 && hour < 20 },
+    { time:'20:00 - 22:00', label:'✍️ 睡前写作', desc:'写日记或短文练习', active: hour >= 20 && hour < 22 },
+  ];
+  
+  document.getElementById('planTimeline').innerHTML = timeSlots.map(s => {
+    const done = false; // 简化处理
+    const dotCls = s.active ? 'active' : done ? 'done' : 'pending';
+    return `<div class="timeline-item">
+      <div class="timeline-dot ${dotCls}">${s.active ? '📍' : '⏳'}</div>
+      <div class="timeline-content">
+        <div class="timeline-title">${s.label}</div>
+        <div class="timeline-desc">${s.desc}</div>
+        <div class="timeline-time">${s.time}</div>
+      </div>
+    </div>`;
+  }).join('');
+  
+  // 自定义任务
+  document.getElementById('customTasks').innerHTML = state.customTasks.map(t => `
+    <div class="goal-card ${t.done ? 'completed' : ''}" style="padding:12px;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleCustomTask(${t.id})" style="width:20px;height:20px;accent-color:var(--primary);cursor:pointer;">
+        <span style="flex:1;${t.done ? 'text-decoration:line-through;color:var(--text-secondary)' : ''}">${t.text}</span>
+        <button style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:1.1rem;" onclick="deleteCustomTask(${t.id})">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function goToTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+  if (btn) btn.classList.add('active');
+  const content = document.getElementById('tab-' + tab);
+  if (content) content.classList.add('active');
+  if (tab === 'vocab') renderWordList();
+  if (tab === 'progress') renderProgress();
+}
+
+function generateSmartSuggest(tasks) {
+  const hour = new Date().getHours();
+  const suggestions = [];
+  
+  // 根据进度给出建议
+  const vocabPct = state.goals.vocab > 0 ? state.todayProgress.vocabDone / state.goals.vocab : 0;
+  const grammarPct = state.goals.grammar > 0 ? state.todayProgress.grammarDone / state.goals.grammar : 0;
+  
+  if (vocabPct < 0.3 && hour > 10) {
+    suggestions.push({ text:'单词进度落后，建议现在开始背单词！', action:'📖 去背单词', link:'vocab' });
+  }
+  if (grammarPct < 0.3 && hour > 14) {
+    suggestions.push({ text:'语法练习还没开始，下午是做题的好时间！', action:'✏️ 去做语法题', link:'grammar' });
+  }
+  if (vocabPct >= 1 && grammarPct >= 1) {
+    suggestions.push({ text:'🎉 今日核心任务已完成！可以试试听力或写作', action:'🎧 听力训练', link:'listening' });
+  }
+  if (state.skippedTasks.length > 0) {
+    suggestions.push({ text:`你跳过了 ${state.skippedTasks.length} 项任务，可以考虑减少明日目标`, action:'⚙️ 调整目标', link:'plan' });
+  }
+  if (hour >= 20 && state.todayProgress.writingDone < state.goals.writing) {
+    suggestions.push({ text:'睡前写一段英文日记，有助于记忆巩固！', action:'✍️ 去写作', link:'writing' });
+  }
+  if (hour < 8 && vocabPct < 0.5) {
+    suggestions.push({ text:'🌅 早晨是记忆黄金期，趁现在背单词效率最高！', action:'📖 开始背单词', link:'vocab' });
+  }
+  if (suggestions.length === 0) {
+    suggestions.push({ text:'保持良好的学习节奏！继续加油 💪', action:null });
+  }
+  
+  const main = suggestions[0];
+  document.getElementById('smartText').textContent = main.text;
+  document.getElementById('smartActions').innerHTML = suggestions.filter(s => s.action && s.link).map(s => 
+    `<button class="btn btn-primary" style="font-size:0.8rem;padding:6px 12px;" onclick="goToTab('${s.link}')">${s.action}</button>`
+  ).join('');
+}
+
+// 在学习动作中更新今日进度
+function trackProgress(type) {
+  if (type === 'vocab') state.todayProgress.vocabDone++;
+  if (type === 'grammar') state.todayProgress.grammarDone++;
+  if (type === 'listening') state.todayProgress.listeningDone++;
+  if (type === 'writing') state.todayProgress.writingDone++;
+  saveState();
+}
+
+// ==================== 首页 ====================
+function updateHome() {
+  const h = new Date().getHours();
+  const greeting = h < 6 ? '夜深了，注意休息！' : h < 12 ? '早上好！' : h < 18 ? '下午好！' : '晚上好！';
+  document.getElementById('greetingText').textContent = greeting;
+  
+  // 统计
+  let totalLearned = 0;
+  Object.values(WORDS_DB).forEach(cat => {
+    totalLearned += cat.filter(w => w.mastery > 0).length;
+  });
+  document.getElementById('totalWords').textContent = totalLearned;
+  document.getElementById('todayWords').textContent = state.todayLearned;
+  document.getElementById('grammarCorrect').textContent = state.grammarStats.total > 0 
+    ? Math.round(state.grammarStats.correct / state.grammarStats.total * 100) + '%' : '—';
+  document.getElementById('totalDays').textContent = state.checkinDates.length;
+  
+  // 今日任务
+  const tasks = [
+    { icon:'📖', name:'背诵10个新单词', desc:'完成今日单词学习', done: state.todayLearned >= 10 },
+    { icon:'✏️', name:'做5道语法题', desc:'巩固语法知识', done: state.grammarStats.total >= 5 },
+    { icon:'🎧', name:'完成1次听力训练', desc:'提升听力水平', done: false },
+    { icon:'✍️', name:'写一段英文', desc:'练习写作表达', done: state.writings.some(w => w.date === new Date().toISOString().slice(0,10)) },
+  ];
+  document.getElementById('todayTasks').innerHTML = tasks.map(t => `
+    <div class="task-item">
+      <span class="task-icon">${t.icon}</span>
+      <div class="task-info">
+        <div class="task-name">${t.name}</div>
+        <div class="task-desc">${t.desc}</div>
+      </div>
+      <span class="task-status">${t.done ? '✅' : '⬜'}</span>
+    </div>
+  `).join('');
+  
+  // 每日一句
+  const ds = DAILY_SENTENCES[new Date().getDate() % DAILY_SENTENCES.length];
+  document.getElementById('dailySentence').textContent = `"${ds.en}"`;
+  document.getElementById('dailySentenceCn').textContent = ds.cn;
+}
+
+// ==================== 单词记忆 ====================
+function getFilteredWords() {
+  let words = WORDS_DB[state.currentCategory] || WORDS_DB.core;
+  if (state.currentLevel === 'new') words = words.filter(w => w.mastery === 0);
+  else if (state.currentLevel === 'learning') words = words.filter(w => w.mastery > 0 && w.mastery < 3);
+  else if (state.currentLevel === 'mastered') words = words.filter(w => w.mastery >= 3);
+  return words;
+}
+
+function showCurrentWord() {
+  const words = getFilteredWords();
+  if (words.length === 0) {
+    document.getElementById('cardWord').textContent = '暂无单词';
+    document.getElementById('cardPhonetic').textContent = '';
+    document.getElementById('cardMeaning').textContent = '';
+    document.getElementById('cardExample').textContent = '';
+    document.getElementById('cardRoot').textContent = '';
+    document.getElementById('wordProgress').textContent = '0 / 0';
+    return;
+  }
+  if (state.currentWordIndex >= words.length) state.currentWordIndex = 0;
+  const w = words[state.currentWordIndex];
+  document.getElementById('cardWord').textContent = w.word;
+  document.getElementById('cardPhonetic').textContent = w.phonetic;
+  document.getElementById('cardMeaning').textContent = w.meaning;
+  document.getElementById('cardExample').textContent = w.example ? `"${w.example}"` : '';
+  document.getElementById('cardRoot').textContent = w.root ? `🧬 ${w.root}` : '';
+  document.getElementById('wordProgress').textContent = `${state.currentWordIndex + 1} / ${words.length}`;
+  document.getElementById('flashcard').classList.remove('flipped');
+}
+
+function flipCard() {
+  document.getElementById('flashcard').classList.toggle('flipped');
+}
+
+function nextWord() {
+  const words = getFilteredWords();
+  if (words.length === 0) return;
+  state.currentWordIndex = (state.currentWordIndex + 1) % words.length;
+  showCurrentWord();
+}
+
+function prevWord() {
+  const words = getFilteredWords();
+  if (words.length === 0) return;
+  state.currentWordIndex = (state.currentWordIndex - 1 + words.length) % words.length;
+  showCurrentWord();
+}
+
+function markWord(level) {
+  const words = getFilteredWords();
+  if (words.length === 0) return;
+  const w = words[state.currentWordIndex];
+  // 找到原始数据库中的单词并更新
+  Object.values(WORDS_DB).forEach(cat => {
+    const found = cat.find(x => x.word === w.word);
+    if (found) {
+      if (level === 'easy') found.mastery = Math.min(5, found.mastery + 1);
+      else if (level === 'medium') found.mastery = Math.min(5, found.mastery + 0.5);
+      else found.mastery = Math.max(0, found.mastery - 0.5);
+    }
+  });
+  if (level !== 'hard') {
+    state.todayLearned++;
+    trackProgress('vocab');
+  }
+  saveState();
+  nextWord();
+  renderWordList();
+  updateHome();
+}
+
+function renderWordList() {
+  const words = getFilteredWords();
+  document.getElementById('wordList').innerHTML = words.map(w => {
+    const stars = w.mastery >= 3 ? '⭐⭐⭐' : w.mastery >= 1 ? '⭐⭐' : w.mastery > 0 ? '⭐' : '☆☆☆';
+    const cls = w.mastery >= 3 ? 'mastery-3' : w.mastery >= 1 ? 'mastery-2' : w.mastery > 0 ? 'mastery-1' : 'mastery-0';
+    return `<div class="word-item">
+      <div><span class="word-text">${w.word}</span> <span class="word-meaning">${w.meaning}</span></div>
+      <span class="mastery-stars ${cls}">${stars}</span>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('vocabLevel').addEventListener('change', e => {
+  state.currentLevel = e.target.value;
+  state.currentWordIndex = 0;
+  showCurrentWord();
+  renderWordList();
+});
+
+document.getElementById('vocabCategory').addEventListener('change', e => {
+  state.currentCategory = e.target.value;
+  state.currentWordIndex = 0;
+  showCurrentWord();
+  renderWordList();
+});
+
+// ==================== 语法练习 ====================
+document.querySelectorAll('.grammar-cat-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.grammar-cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.grammarCat = btn.dataset.cat;
+    state.grammarAnswered = false;
+    loadGrammarQuestion();
+  });
+});
+
+function loadGrammarQuestion() {
+  state.grammarAnswered = false;
+  const questions = GRAMMAR_DB[state.grammarCat];
+  const q = questions[Math.floor(Math.random() * questions.length)];
+  
+  const container = document.getElementById('grammarQuestion');
+  container.innerHTML = `
+    <div class="card question-card">
+      <div class="question-text">${q.q.replace('___', '<span class="blank">___</span>')}</div>
+      <ul class="options-list" id="grammarOptions">
+        ${q.options.map((opt, i) => `<li data-idx="${i}" onclick="checkGrammarAnswer(${i}, ${q.answer}, '${q.explain.replace(/'/g, "\\'")}')">${String.fromCharCode(65+i)}. ${opt}</li>`).join('')}
+      </ul>
+      <div class="explanation" id="grammarExplain">${q.explain}</div>
+    </div>
+  `;
+}
+
+function checkGrammarAnswer(selected, correct, explain) {
+  if (state.grammarAnswered) return;
+  state.grammarAnswered = true;
+  
+  state.grammarStats.total++;
+  const isCorrect = selected === correct;
+  if (isCorrect) state.grammarStats.correct++;
+  trackProgress('grammar');
+  saveState();
+  
+  const options = document.querySelectorAll('#grammarOptions li');
+  options.forEach((opt, i) => {
+    if (i === correct) opt.classList.add('correct');
+    else if (i === selected && !isCorrect) opt.classList.add('wrong');
+    opt.style.pointerEvents = 'none';
+  });
+  
+  document.getElementById('grammarExplain').classList.add('show');
+  updateHome();
+}
+
+// ==================== 听力训练 ====================
+function renderListening() {
+  const container = document.getElementById('listeningMaterials');
+  container.innerHTML = LISTENING_DB.map((item, idx) => `
+    <div class="listen-item">
+      <div class="listen-header">
+        <span class="listen-title">${item.title}</span>
+        <span class="listen-level">${item.level}</span>
+      </div>
+      <div class="listen-controls">
+        <button class="btn btn-primary" onclick="playListening(${idx})" id="playBtn${idx}">▶ 播放</button>
+        <button class="speed-btn" onclick="setSpeed(${idx}, 0.7)" id="speed07_${idx}">0.7x</button>
+        <button class="speed-btn active" onclick="setSpeed(${idx}, 1)" id="speed10_${idx}">1.0x</button>
+        <button class="speed-btn" onclick="setSpeed(${idx}, 1.3)" id="speed13_${idx}">1.3x</button>
+        <button class="btn btn-outline" onclick="toggleScript(${idx})" id="scriptBtn${idx}">📝 原文</button>
+        <button class="btn btn-accent" onclick="checkDictation(${idx})" id="checkBtn${idx}">✅ 校对</button>
+      </div>
+      <textarea class="listen-textarea" id="dictation${idx}" placeholder="听写区域：在这里输入你听到的内容..."></textarea>
+      <div class="dictation-result" id="dictResult${idx}"></div>
+      <div id="script${idx}" style="display:none;margin-top:10px;padding:10px;background:#f8fafc;border-radius:8px;font-size:0.9rem;line-height:1.8;color:var(--text-secondary);">${item.text}</div>
+    </div>
+  `).join('');
+}
+
+let currentUtterance = null;
+function playListening(idx) {
+  if (currentUtterance) speechSynthesis.cancel();
+  const item = LISTENING_DB[idx];
+  currentUtterance = new SpeechSynthesisUtterance(item.text);
+  currentUtterance.lang = 'en-US';
+  currentUtterance.rate = item.speed || 1;
+  speechSynthesis.speak(currentUtterance);
+  
+  const btn = document.getElementById('playBtn' + idx);
+  btn.textContent = '⏸ 播放中';
+  currentUtterance.onend = () => { btn.textContent = '▶ 播放'; };
+}
+
+function setSpeed(idx, speed) {
+  LISTENING_DB[idx].speed = speed;
+  [0.7, 1, 1.3].forEach(s => {
+    const b = document.getElementById(`speed${s*10}_${idx}`);
+    if (b) b.classList.toggle('active', s === speed);
+  });
+}
+
+function toggleScript(idx) {
+  const el = document.getElementById('script' + idx);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function checkDictation(idx) {
+  const input = document.getElementById('dictation' + idx).value.trim();
+  const original = LISTENING_DB[idx].text;
+  if (!input) { alert('请先输入你听到的内容'); return; }
+  trackProgress('listening');
+  
+  const inputWords = input.split(/\s+/);
+  const origWords = original.split(/\s+/);
+  let html = '';
+  const maxLen = Math.max(inputWords.length, origWords.length);
+  for (let i = 0; i < inputWords.length; i++) {
+    const clean = w => w.replace(/[.,!?;:'"]/g, '').toLowerCase();
+    if (i < origWords.length && clean(inputWords[i]) === clean(origWords[i])) {
+      html += `<span class="correct-word">${inputWords[i]}</span> `;
+    } else {
+      html += `<span class="wrong-word" title="正确: ${origWords[i] || ''}">${inputWords[i]}</span> `;
+    }
+  }
+  // 显示遗漏的词
+  if (inputWords.length < origWords.length) {
+    html += '<br><span style="color:var(--text-secondary);font-size:0.85rem;">遗漏: </span>';
+    for (let i = inputWords.length; i < origWords.length; i++) {
+      html += `<span style="color:var(--primary);font-weight:600;">${origWords[i]}</span> `;
+    }
+  }
+  document.getElementById('dictResult' + idx).innerHTML = html;
+}
+
+// ==================== 写作练习 ====================
+function renderWriting() {
+  const toolbar = document.getElementById('phraseToolbar');
+  toolbar.innerHTML = PHRASES.map(p => `<span class="phrase-tag" onclick="insertPhrase('${p}')">${p}</span>`).join('');
+}
+
+function insertPhrase(phrase) {
+  const area = document.getElementById('writingArea');
+  const start = area.selectionStart;
+  const text = area.value;
+  area.value = text.slice(0, start) + phrase + ' ' + text.slice(start);
+  area.focus();
+  updateWordCount();
+}
+
+document.querySelectorAll('.template-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tpl = WRITING_TEMPLATES[btn.dataset.tpl];
+    document.getElementById('writingArea').value = tpl.template;
+    document.getElementById('writingPrompt').textContent = '📝 ' + tpl.prompt;
+    document.getElementById('writingPrompt').style.display = 'block';
+    updateWordCount();
+  });
+});
+
+document.getElementById('writingArea').addEventListener('input', updateWordCount);
+
+function updateWordCount() {
+  const text = document.getElementById('writingArea').value.trim();
+  const count = text ? text.split(/\s+/).length : 0;
+  document.getElementById('wordCount').textContent = count;
+}
+
+function analyzeWriting() {
+  const text = document.getElementById('writingArea').value.trim();
+  if (!text) { alert('请先写点内容再分析'); return; }
+  
+  const feedback = [];
+  const words = text.split(/\s+/);
+  
+  // 字数检查
+  if (words.length < 30) feedback.push({ type:'warn', text:'⚠️ 文章较短，建议至少写30个词以上。' });
+  else if (words.length >= 100) feedback.push({ type:'good', text:'✅ 文章长度不错！' });
+  
+  // 句子长度
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim());
+  const avgLen = words.length / Math.max(sentences.length, 1);
+  if (avgLen > 25) feedback.push({ type:'warn', text:'⚠️ 平均句长偏长（' + Math.round(avgLen) + '词/句），建议适当拆分长句。' });
+  else if (avgLen >= 8) feedback.push({ type:'good', text:'✅ 句子长度适中，平均' + Math.round(avgLen) + '词/句。' });
+  else feedback.push({ type:'warn', text:'⚠️ 句子偏短，尝试使用复合句和从句。' });
+  
+  // 连接词检查
+  const connectors = ['however','moreover','furthermore','therefore','nevertheless','in addition','on the other hand','for example','in conclusion','as a result'];
+  const usedConnectors = connectors.filter(c => text.toLowerCase().includes(c));
+  if (usedConnectors.length === 0) feedback.push({ type:'bad', text:'❌ 未使用连接词，建议添加如 however, moreover, therefore 等。' });
+  else feedback.push({ type:'good', text:'✅ 使用了 ' + usedConnectors.length + ' 个连接词：' + usedConnectors.join(', ') });
+  
+  // 段落检查
+  const paragraphs = text.split(/\n\n+/).filter(p => p.trim());
+  if (paragraphs.length < 2 && words.length > 50) feedback.push({ type:'warn', text:'⚠️ 建议分段写作，增加文章层次感。' });
+  else if (paragraphs.length >= 2) feedback.push({ type:'good', text:'✅ 文章有 ' + paragraphs.length + ' 个段落，结构清晰。' });
+  
+  // 常见错误检查
+  const commonErrors = [
+    { pattern:/\bi\b(?![.''])/g, msg:'小写 "i" 应改为大写 "I"' },
+    { pattern:/\balot\b/gi, msg:'"alot" 应为 "a lot"' },
+    { pattern:/\btheir\s+is\b/gi, msg:'"their is" 可能应为 "there is"' },
+    { pattern:/\byour\s+welcome\b/gi, msg:'"your welcome" 应为 "you\'re welcome"' },
+  ];
+  commonErrors.forEach(e => {
+    if (e.pattern.test(text)) feedback.push({ type:'bad', text:'❌ ' + e.msg });
+  });
+  
+  // 词汇多样性
+  const uniqueWords = new Set(words.map(w => w.toLowerCase().replace(/[.,!?;:'"]/g, '')));
+  const diversity = uniqueWords.size / words.length;
+  if (diversity < 0.5 && words.length > 20) feedback.push({ type:'warn', text:'⚠️ 词汇重复率较高，建议使用同义词替换。' });
+  else if (diversity >= 0.6) feedback.push({ type:'good', text:'✅ 词汇多样性良好！' });
+  
+  document.getElementById('writingFeedback').innerHTML = feedback.map(f => 
+    `<div class="feedback-item feedback-${f.type === 'good' ? 'good' : f.type === 'warn' ? 'warn' : 'bad'}">${f.text}</div>`
+  ).join('');
+}
+
+function saveWriting() {
+  const text = document.getElementById('writingArea').value.trim();
+  if (!text) { alert('没有内容可以保存'); return; }
+  state.writings.push({ date: new Date().toISOString().slice(0,10), text });
+  trackProgress('writing');
+  saveState();
+  alert('✅ 写作已保存！');
+  updateHome();
+}
+
+function clearWriting() {
+  document.getElementById('writingArea').value = '';
+  document.getElementById('writingPrompt').style.display = 'none';
+  document.getElementById('writingFeedback').innerHTML = '';
+  updateWordCount();
+}
+
+// ==================== 进度追踪 ====================
+function renderProgress() {
+  // 打卡日历
+  const cal = document.getElementById('checkinCalendar');
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = now.getDate();
+  
+  let calHtml = ['日','一','二','三','四','五','六'].map(d => `<div class="cal-header">${d}</div>`).join('');
+  for (let i = 0; i < firstDay; i++) calHtml += '<div class="cal-day empty"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isChecked = state.checkinDates.includes(dateStr);
+    const isToday = d === today;
+    calHtml += `<div class="cal-day${isChecked ? ' checked' : ''}${isToday ? ' today' : ''}">${d}</div>`;
+  }
+  cal.innerHTML = calHtml;
+  
+  // 学习进度
+  let totalWords = 0, learnedWords = 0, masteredWords = 0;
+  Object.values(WORDS_DB).forEach(cat => {
+    totalWords += cat.length;
+    learnedWords += cat.filter(w => w.mastery > 0).length;
+    masteredWords += cat.filter(w => w.mastery >= 3).length;
+  });
+  
+  const stats = document.getElementById('progressStats');
+  stats.innerHTML = `
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;font-size:0.9rem;margin-bottom:4px;">
+        <span>单词学习进度</span><span>${learnedWords}/${totalWords}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill pf-primary" style="width:${totalWords ? learnedWords/totalWords*100 : 0}%"></div></div>
+    </div>
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;font-size:0.9rem;margin-bottom:4px;">
+        <span>单词掌握率</span><span>${masteredWords}/${totalWords}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill pf-success" style="width:${totalWords ? masteredWords/totalWords*100 : 0}%"></div></div>
+    </div>
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;font-size:0.9rem;margin-bottom:4px;">
+        <span>语法正确率</span><span>${state.grammarStats.correct}/${state.grammarStats.total}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill pf-accent" style="width:${state.grammarStats.total ? state.grammarStats.correct/state.grammarStats.total*100 : 0}%"></div></div>
+    </div>
+  `;
+  
+  // 成就
+  const achievements = [
+    { icon:'🌱', name:'初学者', desc:'完成第一次学习', unlocked: state.totalLearned > 0 || state.grammarStats.total > 0 },
+    { icon:'📖', name:'词汇新手', desc:'学习10个单词', unlocked: learnedWords >= 10 },
+    { icon:'📚', name:'词汇达人', desc:'学习30个单词', unlocked: learnedWords >= 30 },
+    { icon:'✏️', name:'语法新秀', desc:'完成5道语法题', unlocked: state.grammarStats.total >= 5 },
+    { icon:'🏆', name:'语法大师', desc:'语法正确率80%以上(至少10题)', unlocked: state.grammarStats.total >= 10 && (state.grammarStats.correct / state.grammarStats.total) >= 0.8 },
+    { icon:'🔥', name:'坚持7天', desc:'连续打卡7天', unlocked: state.streak >= 7 },
+    { icon:'✍️', name:'写作新手', desc:'保存3篇写作', unlocked: state.writings.length >= 3 },
+    { icon:'🌟', name:'全能学员', desc:'完成所有类型的学习', unlocked: learnedWords >= 5 && state.grammarStats.total >= 3 && state.writings.length >= 1 },
+  ];
+  
+  document.getElementById('achievements').innerHTML = achievements.map(a => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;margin-bottom:8px;background:${a.unlocked ? '#ecfdf5' : '#f8fafc'};opacity:${a.unlocked ? 1 : 0.5};">
+      <span style="font-size:2rem;">${a.icon}</span>
+      <div>
+        <div style="font-weight:600;">${a.name} ${a.unlocked ? '✅' : '🔒'}</div>
+        <div style="font-size:0.8rem;color:var(--text-secondary);">${a.desc}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ==================== 初始化 ====================
+function initApp() {
+  updateHome();
+  showCurrentWord();
+  renderWordList();
+  loadGrammarQuestion();
+  renderListening();
+  renderWriting();
+  renderPlan();
+  
+  // 处理 PWA 快捷方式的 hash 路由
+  const hash = window.location.hash.replace('#', '');
+  const validTabs = ['home', 'plan', 'vocab', 'grammar', 'listening', 'writing', 'progress'];
+  if (hash && validTabs.includes(hash)) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    const btn = document.querySelector(`.tab-btn[data-tab="${hash}"]`);
+    if (btn) btn.classList.add('active');
+    const tab = document.getElementById('tab-' + hash);
+    if (tab) tab.classList.add('active');
+  }
+}
+
+// ==================== PWA 安装 ====================
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // 显示安装提示（延迟3秒，避免干扰用户）
+  setTimeout(() => {
+    const dismissed = localStorage.getItem('englishPro_install_dismissed');
+    if (!dismissed) {
+      document.getElementById('installBanner').classList.add('show');
+    }
+  }, 3000);
+});
+
+function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then((result) => {
+    if (result.outcome === 'accepted') {
+      console.log('PWA 安装成功');
+    }
+    deferredPrompt = null;
+    document.getElementById('installBanner').classList.remove('show');
+  });
+}
+
+function dismissInstall() {
+  document.getElementById('installBanner').classList.remove('show');
+  localStorage.setItem('englishPro_install_dismissed', '1');
+}
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBanner').classList.remove('show');
+  deferredPrompt = null;
+});
+
+// ==================== Service Worker 注册 ====================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((reg) => console.log('[SW] 注册成功:', reg.scope))
+      .catch((err) => console.log('[SW] 注册失败:', err));
+  });
+}
+
+// ==================== 启动画面 ====================
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const splash = document.getElementById('splashScreen');
+    if (splash) splash.classList.add('hide');
+  }, 1600);
+});
+
+// ==================== 初始化 ====================
+function init() {
+  // 检查是否有已登录用户
+  const savedUser = localStorage.getItem('englishPro_currentUser');
+  if (savedUser) {
+    const users = getUsers();
+    if (users[savedUser]) {
+      loginAs(users[savedUser]);
+      return;
+    } else if (savedUser === 'guest') {
+      guestLogin();
+      return;
+    }
+  }
+  // 未登录，显示登录页
+  document.getElementById('authOverlay').classList.remove('hidden');
+}
+
+init();
+</script>
+</body>
+</html>
