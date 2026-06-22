@@ -1,0 +1,37 @@
+#!/bin/bash
+# ============================================
+# EnglishPro 一键部署到 GitHub Pages 脚本
+# 前提：已安装 git 并登录了 GitHub
+# ============================================
+
+echo "📚 EnglishPro — 一键部署到 GitHub Pages"
+echo "=========================================="
+echo ""
+echo "步骤："
+echo ""
+echo "1️⃣  先在 GitHub 网页上创建一个新仓库"
+echo "   打开 https://github.com/new"
+echo "   仓库名填写: englishpro"
+echo "   勾选 Public（公开）"
+echo "   不要勾选 README"
+echo "   点击 Create repository"
+echo ""
+echo "2️⃣  然后在终端运行以下命令："
+echo ""
+echo "   cd /workspace/english-app"
+echo "   git init"
+echo "   git add index.html manifest.json sw.js icons/ .nojekyll"
+echo "   git commit -m 'EnglishPro 英语学习助手'"
+echo "   git branch -M main"
+echo "   git remote add origin https://github.com/你的用户名/englishpro.git"
+echo "   git push -u origin main"
+echo ""
+echo "3️⃣  开启 GitHub Pages"
+echo "   打开仓库 Settings → Pages"
+echo "   Source 选择 'main' 分支"
+echo "   点击 Save"
+echo ""
+echo "4️⃣  等待 1-2 分钟后访问："
+echo "   https://你的用户名.github.io/englishpro/"
+echo ""
+echo "✅ 部署完成！把这个链接发给朋友即可"

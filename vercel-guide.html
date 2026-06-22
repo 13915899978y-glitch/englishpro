@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vercel 部署指南 - EnglishPro</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);min-height:100vh;color:#e2e8f0;padding:20px}
+.container{max-width:680px;margin:0 auto}
+.header{text-align:center;margin-bottom:32px}
+.header h1{font-size:1.8rem;color:#818cf8;margin-bottom:8px}
+.header p{color:#94a3b8;font-size:0.95rem}
+.step-card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:24px;margin-bottom:16px;transition:all 0.2s}
+.step-card:hover{border-color:#6366f1}
+.step-num{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#6366f1;color:white;font-weight:800;font-size:0.9rem;margin-bottom:12px}
+.step-title{font-size:1.1rem;font-weight:700;margin-bottom:10px;color:#f1f5f9}
+.step-desc{font-size:0.9rem;line-height:1.7;color:#cbd5e1}
+.step-desc b{color:#818cf8}
+.step-img{background:#0f172a;border-radius:10px;padding:14px;margin:12px 0;font-size:0.85rem;color:#64748b;border:1px dashed #334155}
+.code{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:12px 16px;font-family:'Courier New',monospace;font-size:0.85rem;color:#818cf8;margin:8px 0;word-break:break-all}
+.btn{display:inline-block;padding:12px 28px;border-radius:10px;font-weight:700;font-size:0.95rem;text-decoration:none;transition:all 0.2s;border:none;cursor:pointer}
+.btn-primary{background:#6366f1;color:white}
+.btn-primary:hover{background:#4f46e5}
+.btn-light{background:#e2e8f0;color:#1e293b}
+.tip{background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(139,92,246,0.1));border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:16px;margin:16px 0;font-size:0.85rem;line-height:1.6;color:#c7d2fe}
+.tip b{color:#a5b4fc}
+.warning{background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:16px;margin:16px 0;font-size:0.85rem;line-height:1.6;color:#fcd34d}
+.result{text-align:center;padding:24px;background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(34,197,94,0.1));border:1px solid rgba(16,185,129,0.3);border-radius:16px;margin-top:20px}
+.result h2{color:#34d399;font-size:1.3rem;margin-bottom:8px}
+.result p{color:#86efac;font-size:0.9rem}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div style="font-size:3rem;margin-bottom:8px;">🚀</div>
+    <h1>EnglishPro — Vercel 永久部署指南</h1>
+    <p>跟着做，3分钟搞定，会员随时都能访问</p>
+  </div>
+  
+  <div class="tip">
+    💡 <b>为什么要部署到 Vercel？</b><br>
+    • ✅ <b>永久在线</b>：24小时不关机，会员随时可登录<br>
+    • ✅ <b>免费</b>：个人项目完全免费<br>
+    • ✅ <b>自带 HTTPS</b>：安全加密，手机可安装为 App<br>
+    • ✅ <b>全球 CDN</b>：国内也能快速访问<br>
+    • ✅ <b>固定域名</b>：链接永远不变，会员数据不会丢
+  </div>
+  
+  <div class="step-card">
+    <div class="step-num">1</div>
+    <div class="step-title">下载部署包</div>
+    <div class="step-desc">
+      先下载部署文件 <b>deploy-vercel.zip</b>（61KB），里面包含应用的所有文件。
+    </div>
+    <div style="margin-top:12px;">
+      <a class="btn btn-primary" href="deploy-vercel.zip" download="deploy-vercel.zip">📥 下载 deploy-vercel.zip</a>
+    </div>
+  </div>
+  
+  <div class="step-card">
+    <div class="step-num">2</div>
+    <div class="step-title">打开 Vercel 官网</div>
+    <div class="step-desc">
+      在浏览器中打开 <b>vercel.com</b>，点击右上角 <b>"Sign Up"</b> 注册账号。<br><br>
+      💡 可以直接用 <b>GitHub 账号</b>或 <b>邮箱</b>注册，30秒完成。
+    </div>
+    <div style="margin-top:12px;">
+      <a class="btn btn-light" href="https://vercel.com/signup" target="_blank">🔗 打开 Vercel 注册页</a>
+    </div>
+  </div>
+  
+  <div class="step-card">
+    <div class="step-num">3</div>
+    <div class="step-title">上传部署包</div>
+    <div class="step-desc">
+      注册登录后：<br>
+      ① 点击首页的 <b>"Add New..."</b> → 选择 <b>"Project"</b><br>
+      ② 找到 <b>"Deploy without Git"</b>（不用Git直接部署）选项，点击<br>
+      ③ 将刚才下载的 <b>deploy-vercel.zip</b> 直接<b>拖拽</b>到页面中<br>
+      ④ 点击 <b>"Deploy"</b> 按钮
+    </div>
+    <div class="step-img">
+      📱 操作路径：Dashboard → Add New → Project → Deploy without Git → 拖拽 zip → Deploy
+    </div>
+  </div>
+  
+  <div class="step-card">
+    <div class="step-num">4</div>
+    <div class="step-title">获取永久链接</div>
+    <div class="step-desc">
+      部署完成后（约10秒），Vercel 会生成一个永久链接，格式类似：
+    </div>
+    <div class="code">https://englishpro-xxxxx.vercel.app</div>
+    <div class="step-desc">
+      这就是你的<b>永久访问地址</b>！把这个链接发给会员，他们随时都能访问。
+    </div>
+  </div>
+  
+  <div class="step-card">
+    <div class="step-num">5</div>
+    <div class="step-title">自定义域名（可选）</div>
+    <div class="step-desc">
+      如果嫌默认域名不好记，可以在 Vercel 项目设置中：
+    </div>
+    <div class="step-desc" style="margin-top:8px;">
+      Settings → Domains → 输入你想要的域名前缀<br>
+      例如：<b>english-learning.vercel.app</b>
+    </div>
+  </div>
+  
+  <div class="result">
+    <h2>🎉 部署完成后</h2>
+    <p>✅ 会员24小时随时可登录<br>
+    ✅ 链接永久不变<br>
+    ✅ 数据不会丢失<br>
+    ✅ 管理员 ClaudiaYao 可随时查看会员数据</p>
+  </div>
+  
+  <div class="warning">
+    ⚠️ <b>重要提示</b><br>
+    由于应用使用浏览器 localStorage 存储数据，<b>不同域名的数据不共享</b>。<br>
+    所以请确定一个固定域名后，让所有会员都用同一个链接访问。<br>
+    部署到 Vercel 后，域名就固定了，会员数据就不会再丢失了！
+  </div>
+  
+  <div style="text-align:center;margin-top:24px;">
+    <a class="btn btn-primary" href="deploy-vercel.zip" download="deploy-vercel.zip" style="font-size:1.1rem;padding:16px 40px;">📥 立即下载部署包</a>
+  </div>
+  
+  <div style="text-align:center;margin-top:20px;color:#475569;font-size:0.8rem;">
+    EnglishPro 英语学习助手 | 部署指南
+  </div>
+</div>
+</body>
+</html>

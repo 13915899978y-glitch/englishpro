@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EnglishPro 下载安装</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#eef2ff 0%,#e0e7ff 50%,#c7d2fe 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.container{max-width:480px;width:100%;text-align:center}
+.logo{font-size:5rem;margin-bottom:8px;animation:bounce 2s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+h1{font-size:2rem;color:#4f46e5;margin-bottom:4px}
+.subtitle{color:#64748b;margin-bottom:32px;font-size:1rem}
+.steps{text-align:left;margin-bottom:32px}
+.step{display:flex;gap:14px;margin-bottom:20px;background:white;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.step-num{width:36px;height:36px;border-radius:50%;background:#6366f1;color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;flex-shrink:0}
+.step-content h3{font-size:0.95rem;margin-bottom:4px;color:#1e293b}
+.step-content p{font-size:0.85rem;color:#64748b;line-height:1.5}
+.download-btn{display:inline-block;background:linear-gradient(135deg,#6366f1,#4f46e5);color:white;padding:16px 40px;border-radius:14px;text-decoration:none;font-size:1.1rem;font-weight:700;box-shadow:0 4px 14px rgba(99,102,241,0.4);transition:all 0.2s;margin-bottom:12px}
+.download-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(99,102,241,0.5)}
+.or-text{color:#94a3b8;font-size:0.85rem;margin:16px 0}
+.scan-hint{color:#64748b;font-size:0.8rem;line-height:1.6;margin-top:16px;background:rgba(255,255,255,0.6);padding:12px;border-radius:10px}
+.badge{display:inline-block;background:#dcfce7;color:#16a34a;padding:4px 10px;border-radius:8px;font-size:0.75rem;font-weight:600;margin-bottom:20px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo">📚</div>
+  <h1>EnglishPro</h1>
+  <p class="subtitle">你的专属英语学习助手</p>
+  <span class="badge">✅ 自包含 · 无需网络 · 一次下载永久使用</span>
+  
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>📱 下载安装包</h3>
+        <p>点击下方按钮下载 EnglishPro-App.zip（约 49KB）</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>📂 解压文件</h3>
+        <p>解压后得到 <b>EnglishPro.html</b> 文件，这是完整的应用，包含所有功能</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>🌐 用浏览器打开</h3>
+        <p><b>iPhone</b>：用 Safari 打开 → 底部分享 → 添加到主屏幕<br>
+        <b>Android</b>：用 Chrome 打开 → 菜单 → 添加到主屏幕</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h3>🎉 开始使用</h3>
+        <p>桌面出现 EnglishPro 图标，点开即可像原生 App 一样学习英语！</p>
+      </div>
+    </div>
+  </div>
+  
+  <a class="download-btn" id="downloadBtn" href="EnglishPro.html" download="EnglishPro.html">📲 下载 EnglishPro App</a>
+  
+  <div class="or-text">— 或者 —</div>
+  
+  <p style="font-size:0.85rem;color:#64748b;margin-bottom:8px;">在线体验（需要网络）</p>
+  <a class="download-btn" style="background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 4px 14px rgba(16,185,129,0.4);padding:12px 28px;font-size:0.95rem;" id="onlineBtn" href="#">🌐 在线打开</a>
+  
+  <div class="scan-hint">
+    💡 <b>小贴士</b>：下载后的 HTML 文件可以离线使用，所有单词库、语法题、听力材料都内置在文件中，无需联网即可学习！<br><br>
+    📱 手机用户：先把文件传到手机（微信/邮件/云盘），再用浏览器打开即可安装到桌面。
+  </div>
+</div>
+
+<script>
+// 在线体验按钮 - 启动本地服务器
+document.getElementById('onlineBtn').addEventListener('click', function(e) {
+  e.preventDefault();
+  // 尝试访问本地服务器
+  const urls = [
+    'http://localhost:8000/index.html',
+    'http://127.0.0.1:8000/index.html'
+  ];
+  window.open(urls[0], '_blank');
+});
+</script>
+</body>
+</html>

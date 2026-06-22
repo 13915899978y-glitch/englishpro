@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EnglishPro - 英语学习助手</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#eef2ff 0%,#e0e7ff 50%,#c7d2fe 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{max-width:520px;width:100%;background:white;border-radius:24px;padding:40px 32px;box-shadow:0 20px 60px rgba(99,102,241,0.15);text-align:center}
+.logo{font-size:4rem;margin-bottom:12px}
+h1{font-size:1.8rem;color:#4f46e5;margin-bottom:4px}
+.subtitle{color:#64748b;font-size:1rem;margin-bottom:28px}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px;text-align:center}
+.feat{background:#f8fafc;border-radius:12px;padding:12px 8px}
+.feat-icon{font-size:1.4rem;margin-bottom:4px}
+.feat-text{font-size:0.75rem;color:#64748b}
+.main-btn{display:block;width:100%;background:linear-gradient(135deg,#6366f1,#4f46e5);color:white;padding:16px;border-radius:14px;text-decoration:none;font-size:1.1rem;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,0.4);transition:all 0.2s;margin-bottom:10px}
+.main-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(99,102,241,0.5)}
+.secondary-btn{display:block;width:100%;background:white;color:#4f46e5;padding:14px;border-radius:14px;text-decoration:none;font-size:0.95rem;font-weight:600;border:2px solid #e0e7ff;cursor:pointer;transition:all 0.2s;margin-bottom:20px}
+.secondary-btn:hover{border-color:#6366f1;background:#f8faff}
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:#94a3b8;font-size:0.85rem}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#e2e8f0}
+.share-section{background:#f8fafc;border-radius:16px;padding:20px;margin-bottom:20px}
+.share-title{font-size:0.9rem;font-weight:700;margin-bottom:12px;color:#1e293b}
+.share-link{display:flex;gap:8px;margin-bottom:12px}
+.share-link input{flex:1;padding:10px 12px;border:2px solid #e2e8f0;border-radius:10px;font-size:0.85rem;color:#1e293b;background:white}
+.share-link button{padding:10px 16px;background:#6366f1;color:white;border:none;border-radius:10px;font-weight:600;cursor:pointer;font-size:0.85rem;white-space:nowrap}
+.qr-area{display:flex;justify-content:center;margin:12px 0}
+.install-guide{text-align:left;background:#f0fdf4;border-radius:12px;padding:16px;margin-top:16px}
+.install-guide h3{font-size:0.9rem;color:#16a34a;margin-bottom:8px}
+.install-guide ol{font-size:0.8rem;color:#374151;padding-left:18px;line-height:1.8}
+.badge{display:inline-block;background:#dcfce7;color:#16a34a;padding:4px 12px;border-radius:8px;font-size:0.75rem;font-weight:600;margin-bottom:16px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">📚</div>
+  <h1>EnglishPro</h1>
+  <p class="subtitle">你的专属英语学习助手</p>
+  <span class="badge">✅ 免费 · 无广告 · 离线可用</span>
+  
+  <div class="features">
+    <div class="feat"><div class="feat-icon">📖</div><div class="feat-text">单词记忆</div></div>
+    <div class="feat"><div class="feat-icon">✏️</div><div class="feat-text">语法练习</div></div>
+    <div class="feat"><div class="feat-icon">🎧</div><div class="feat-text">听力训练</div></div>
+    <div class="feat"><div class="feat-icon">✍️</div><div class="feat-text">写作练习</div></div>
+    <div class="feat"><div class="feat-icon">🎯</div><div class="feat-text">学习计划</div></div>
+    <div class="feat"><div class="feat-icon">📊</div><div class="feat-text">进度追踪</div></div>
+  </div>
+  
+  <a class="main-btn" id="openBtn" href="#">🔐 登录 EnglishPro</a>
+  <a class="secondary-btn" id="downloadBtn" href="EnglishPro.html" download="EnglishPro.html">📲 下载到手机（离线可用）</a>
+  
+  <div class="divider">分享给朋友</div>
+  
+  <div class="share-section">
+    <div class="share-title">🔗 复制链接分享</div>
+    <div class="share-link">
+      <input type="text" id="shareUrl" readonly value="">
+      <button onclick="copyLink()">复制</button>
+    </div>
+    <div class="share-title">📱 扫码分享</div>
+    <div class="qr-area">
+      <canvas id="qrCanvas" width="180" height="180"></canvas>
+    </div>
+  </div>
+  
+  <div class="install-guide">
+    <h3>📲 安装为手机 App</h3>
+    <ol>
+      <li>在手机浏览器中打开上方链接</li>
+      <li><b>iPhone</b>：Safari → 底部分享 → 添加到主屏幕</li>
+      <li><b>Android</b>：Chrome → 菜单 → 添加到主屏幕</li>
+      <li>桌面出现 📚 图标，点开即可像原生 App 一样使用！</li>
+    </ol>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script>
+// 设置当前页面URL
+const currentUrl = window.location.href.replace('share.html','index.html');
+const baseUrl = window.location.origin + window.location.pathname.replace('share.html','');
+document.getElementById('shareUrl').value = baseUrl;
+document.getElementById('openBtn').href = baseUrl + 'index.html';
+
+// 生成二维码
+try {
+  QRCode.toCanvas(document.getElementById('qrCanvas'), baseUrl + 'index.html', {
+    width: 180, margin: 2, color: { dark: '#4f46e5', light: '#ffffff' }
+  });
+} catch(e) { console.log('QR generation failed'); }
+
+function copyLink() {
+  const input = document.getElementById('shareUrl');
+  input.select();
+  navigator.clipboard.writeText(input.value).then(() => {
+    const btn = input.nextElementSibling;
+    btn.textContent = '✅ 已复制';
+    setTimeout(() => btn.textContent = '复制', 2000);
+  });
+}
+</script>
+</body>
+</html>
