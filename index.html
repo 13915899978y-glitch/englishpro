@@ -6738,13 +6738,7 @@ function renderDictQuestion() {
 }
 
 function playDictWord(word) {
-  if ('speechSynthesis' in window) {
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(word);
-    u.lang = 'en-US';
-    u.rate = 0.9;
-    speechSynthesis.speak(u);
-  }
+  speakWordText(word);
 }
 
 function normalizeText(text) {
@@ -7382,20 +7376,69 @@ function flipCard() {
   document.getElementById('flashcard').classList.toggle('flipped');
 }
 
-// 单词发音
+// 单词发音 — 兼容Android/iOS
+let _voicesLoaded = false;
+let _enVoice = null;
+
+// 初始化语音引擎
+function initVoices() {
+  if (!('speechSynthesis' in window)) return;
+  const voices = speechSynthesis.getVoices();
+  if (voices.length === 0) return;
+  _voicesLoaded = true;
+  // 优先选择英语语音
+  _enVoice = voices.find(v => v.lang === 'en-US' && v.localService) 
+    || voices.find(v => v.lang === 'en-US')
+    || voices.find(v => v.lang.startsWith('en'))
+    || null;
+}
+
+if ('speechSynthesis' in window) {
+  // Android: voiceschanged 事件触发时加载
+  speechSynthesis.onvoiceschanged = initVoices;
+  // iOS: 直接尝试加载
+  initVoices();
+}
+
 function speakWord() {
   const word = document.getElementById('cardWord').textContent;
   if (word && word !== '—') speakWordText(word);
 }
 
 function speakWordText(word) {
-  if ('speechSynthesis' in window) {
-    speechSynthesis.cancel();
+  if (!('speechSynthesis' in window)) {
+    console.log('[TTS] 不支持语音合成');
+    return;
+  }
+  
+  // 取消正在播放的
+  speechSynthesis.cancel();
+  
+  // Android需要短暂延迟确保cancel完成
+  setTimeout(() => {
     const u = new SpeechSynthesisUtterance(word);
     u.lang = 'en-US';
     u.rate = 0.85;
+    u.pitch = 1.0;
+    u.volume = 1.0;
+    
+    // 使用已加载的英语语音
+    if (_enVoice) {
+      u.voice = _enVoice;
+    }
+    
+    // Android: 如果voices未加载，先尝试加载
+    if (!_voicesLoaded) {
+      initVoices();
+      if (_enVoice) u.voice = _enVoice;
+    }
+    
+    u.onstart = () => { /* 播放开始 */ };
+    u.onend = () => { /* 播放结束 */ };
+    u.onerror = (e) => { console.log('[TTS] 播放错误:', e.error); };
+    
     speechSynthesis.speak(u);
-  }
+  }, 50);
 }
 
 function nextWord() {
@@ -7539,16 +7582,27 @@ function renderListening() {
 
 let currentUtterance = null;
 function playListening(idx) {
-  if (currentUtterance) speechSynthesis.cancel();
-  const item = LISTENING_DB[idx];
-  currentUtterance = new SpeechSynthesisUtterance(item.text);
-  currentUtterance.lang = 'en-US';
-  currentUtterance.rate = item.speed || 1;
-  speechSynthesis.speak(currentUtterance);
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
   
+  const item = LISTENING_DB[idx];
   const btn = document.getElementById('playBtn' + idx);
-  btn.textContent = '⏸ 播放中';
-  currentUtterance.onend = () => { btn.textContent = '▶ 播放'; };
+  
+  // Android兼容：延迟播放
+  setTimeout(() => {
+    currentUtterance = new SpeechSynthesisUtterance(item.text);
+    currentUtterance.lang = 'en-US';
+    currentUtterance.rate = item.speed || 1;
+    currentUtterance.pitch = 1.0;
+    currentUtterance.volume = 1.0;
+    if (_enVoice) currentUtterance.voice = _enVoice;
+    
+    btn.textContent = '⏸ 播放中';
+    currentUtterance.onend = () => { btn.textContent = '▶ 播放'; };
+    currentUtterance.onerror = () => { btn.textContent = '▶ 播放'; };
+    
+    speechSynthesis.speak(currentUtterance);
+  }, 50);
 }
 
 function setSpeed(idx, speed) {
@@ -7842,6 +7896,22 @@ if ('serviceWorker' in navigator) {
       .catch((err) => console.log('[SW] 注册失败:', err));
   });
 }
+
+// ==================== Android语音解锁 ====================
+// Android Chrome需要用户交互后才能首次播放语音
+let _speechUnlocked = false;
+function unlockSpeech() {
+  if (_speechUnlocked || !('speechSynthesis' in window)) return;
+  // 播放一个空文本解锁语音引擎
+  const u = new SpeechSynthesisUtterance('');
+  u.volume = 0;
+  speechSynthesis.speak(u);
+  _speechUnlocked = true;
+  // 加载voices
+  initVoices();
+}
+document.addEventListener('touchstart', unlockSpeech, { once: false, passive: true });
+document.addEventListener('click', unlockSpeech, { once: false });
 
 // ==================== 启动画面 ====================
 window.addEventListener('load', () => {
