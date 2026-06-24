@@ -8125,6 +8125,7 @@ function markWord(level) {
   if (level !== 'hard') {
     state.todayLearned++;
     trackProgress('vocab');
+    checkDailyTasksComplete();
   }
   saveState();
   nextWord();
@@ -8179,6 +8180,7 @@ function loadGrammarQuestion() {
   
   const container = document.getElementById('grammarQuestion');
   container.innerHTML = `
+    <div id="grammarStatusBar"></div>
     <div class="card question-card">
       <div class="question-text">${q.q.replace('___', '<span class="blank">___</span>')}</div>
       <ul class="options-list" id="grammarOptions">
@@ -8187,6 +8189,7 @@ function loadGrammarQuestion() {
       <div class="explanation" id="grammarExplain">${q.explain}</div>
     </div>
   `;
+  updateGrammarStatus();
 }
 
 function checkGrammarAnswer(selected, correct, explain) {
@@ -8207,7 +8210,100 @@ function checkGrammarAnswer(selected, correct, explain) {
   });
   
   document.getElementById('grammarExplain').classList.add('show');
+  
+  // 更新语法练习状态栏
+  updateGrammarStatus();
+  
+  // 检查今日任务是否全部完成
+  checkDailyTasksComplete();
+  
   updateHome();
+}
+
+// 语法练习状态栏
+function updateGrammarStatus() {
+  const goals = state.goals || { vocab:10, grammar:5, listening:1, writing:1 };
+  const done = state.todayProgress?.grammarDone || 0;
+  const correct = state.grammarStats?.correct || 0;
+  const total = state.grammarStats?.total || 0;
+  const accuracy = total > 0 ? Math.round(correct / total * 100) : 0;
+  const remaining = Math.max(0, goals.grammar - done);
+  
+  let statusEl = document.getElementById('grammarStatusBar');
+  if (!statusEl) {
+    // 动态创建状态栏
+    const container = document.getElementById('grammarQuestion');
+    if (container) {
+      const bar = document.createElement('div');
+      bar.id = 'grammarStatusBar';
+      bar.style.cssText = 'background:linear-gradient(135deg,#eef2ff,#e0e7ff);border-radius:12px;padding:14px 16px;margin-bottom:16px;border:1px solid #c7d2fe;';
+      container.parentNode.insertBefore(bar, container);
+      statusEl = bar;
+    }
+  }
+  
+  if (statusEl) {
+    const pct = goals.grammar > 0 ? Math.min(100, Math.round(done / goals.grammar * 100)) : 0;
+    const isComplete = done >= goals.grammar;
+    statusEl.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:0.9rem;font-weight:700;color:var(--primary);">📊 语法练习状态</div>
+        <div style="font-size:0.85rem;color:var(--text-secondary);">今日 ${done}/${goals.grammar} 题</div>
+      </div>
+      <div style="height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;margin-bottom:8px;">
+        <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--primary),var(--primary-light));border-radius:4px;transition:width 0.4s;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text-secondary);">
+        <span>✅ 正确: ${correct}/${total} (${accuracy}%)</span>
+        <span>${isComplete ? '🎉 今日目标已完成!' : '还需 ' + remaining + ' 题'}</span>
+      </div>
+    `;
+  }
+}
+
+// 检查今日所有学习任务是否完成
+function checkDailyTasksComplete() {
+  const g = state.goals || { vocab:10, grammar:5, listening:1, writing:1 };
+  const tp = state.todayProgress || { vocabDone:0, grammarDone:0, listeningDone:0, writingDone:0 };
+  
+  const allDone = tp.vocabDone >= g.vocab && 
+                  tp.grammarDone >= g.grammar && 
+                  tp.listeningDone >= g.listening && 
+                  tp.writingDone >= g.writing;
+  
+  if (allDone) {
+    showTaskCompleteToast();
+  }
+}
+
+// 任务完成提示弹窗
+let _toastShown = false;
+function showTaskCompleteToast() {
+  if (_toastShown) return; // 同一次会话只提示一次
+  _toastShown = true;
+  
+  const toast = document.createElement('div');
+  toast.id = 'taskCompleteToast';
+  toast.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:white;border-radius:20px;padding:32px 28px;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;animation:fadeIn 0.4s;max-width:90vw;border:2px solid var(--success);`;
+  toast.innerHTML = `
+    <div style="font-size:3rem;margin-bottom:12px;">🎉</div>
+    <div style="font-size:1.3rem;font-weight:800;color:var(--success);margin-bottom:8px;">恭喜！今日任务全部完成！</div>
+    <div style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:16px;line-height:1.6;">
+      📖 单词 ${state.todayProgress.vocabDone}/${state.goals.vocab}<br>
+      ✏️ 语法 ${state.todayProgress.grammarDone}/${state.goals.grammar}<br>
+      🎧 听力 ${state.todayProgress.listeningDone}/${state.goals.listening}<br>
+      ✍️ 写作 ${state.todayProgress.writingDone}/${state.goals.writing}
+    </div>
+    <div style="font-size:0.85rem;color:var(--accent);margin-bottom:20px;">🔥 连续打卡 ${state.streak} 天，继续加油！</div>
+    <button onclick="document.getElementById('taskCompleteToast').remove()" style="background:var(--success);color:white;border:none;padding:12px 32px;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;">太棒了！</button>
+  `;
+  document.body.appendChild(toast);
+  
+  // 5秒后自动消失
+  setTimeout(() => {
+    const el = document.getElementById('taskCompleteToast');
+    if (el) el.remove();
+  }, 8000);
 }
 
 // ==================== 听力训练 ====================
@@ -8277,6 +8373,7 @@ function checkDictation(idx) {
   const original = LISTENING_DB[idx].text;
   if (!input) { alert('请先输入你听到的内容'); return; }
   trackProgress('listening');
+  checkDailyTasksComplete();
   
   const inputWords = input.split(/\s+/);
   const origWords = original.split(/\s+/);
@@ -8391,6 +8488,7 @@ function saveWriting() {
   trackProgress('writing');
   saveState();
   alert('✅ 写作已保存！');
+  checkDailyTasksComplete();
   updateHome();
 }
 
