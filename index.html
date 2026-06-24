@@ -239,6 +239,54 @@
   .dict-finish .df-label { font-size:0.9rem; color:var(--text-secondary); margin-bottom:16px; }
   .dict-finish .df-emoji { font-size:3rem; margin-bottom:8px; }
   
+  /* ========== 每日文章 ========== */
+  .reading-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px; }
+  .reading-date { font-size:0.85rem; color:var(--text-secondary); }
+  .reading-nav { display:flex; gap:8px; }
+  .reading-nav .btn { padding:6px 12px; font-size:0.85rem; }
+  
+  .reading-article { background:var(--card); border-radius:16px; padding:24px 20px; box-shadow:var(--shadow); margin-bottom:16px; border:1px solid var(--border); }
+  .reading-category { display:inline-block; font-size:0.75rem; padding:3px 10px; border-radius:10px; background:#eef2ff; color:var(--primary); font-weight:600; margin-bottom:8px; }
+  .reading-title { font-size:1.3rem; font-weight:800; color:var(--text); margin-bottom:6px; line-height:1.4; }
+  .reading-meta { font-size:0.8rem; color:var(--text-secondary); margin-bottom:16px; }
+  .reading-body { font-size:0.95rem; line-height:1.9; color:var(--text); }
+  .reading-body p { margin-bottom:12px; }
+  .reading-body .vocab-word { background:#eef2ff; color:var(--primary); padding:1px 6px; border-radius:4px; font-weight:600; cursor:pointer; }
+  .reading-body .vocab-word:hover { background:var(--primary); color:white; }
+  
+  .reading-toolbar { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .reading-toolbar .btn { padding:8px 14px; font-size:0.85rem; }
+  .reading-toolbar .btn.active { background:var(--primary); color:white; }
+  
+  .reading-translation { background:#f8fafc; border-radius:12px; padding:16px; margin-top:12px; font-size:0.9rem; line-height:1.8; color:var(--text-secondary); display:none; border-left:4px solid var(--primary); }
+  .reading-translation.show { display:block; }
+  
+  .reading-vocab { background:#fffbeb; border-radius:12px; padding:16px; margin-top:12px; display:none; border:1px solid #fde68a; }
+  .reading-vocab.show { display:block; }
+  .reading-vocab-title { font-weight:700; margin-bottom:8px; color:#92400e; }
+  .reading-vocab-item { padding:6px 0; border-bottom:1px solid #fef3c7; font-size:0.9rem; }
+  .reading-vocab-item:last-child { border-bottom:none; }
+  .reading-vocab-item .rv-word { font-weight:700; color:var(--primary); }
+  .reading-vocab-item .rv-meaning { color:var(--text-secondary); }
+  
+  .reading-quiz { background:#f0fdf4; border-radius:12px; padding:16px; margin-top:12px; display:none; border:1px solid #bbf7d0; }
+  .reading-quiz.show { display:block; }
+  .reading-quiz-title { font-weight:700; margin-bottom:10px; color:#166534; }
+  .reading-quiz-q { margin-bottom:10px; }
+  .reading-quiz-q-text { font-size:0.9rem; margin-bottom:6px; }
+  .reading-quiz-options { list-style:none; }
+  .reading-quiz-options li { padding:8px 12px; border:1px solid var(--border); border-radius:8px; margin-bottom:6px; cursor:pointer; font-size:0.85rem; transition:all 0.2s; }
+  .reading-quiz-options li:hover { border-color:var(--primary); background:#f8faff; }
+  .reading-quiz-options li.correct { border-color:var(--success); background:#ecfdf5; }
+  .reading-quiz-options li.wrong { border-color:var(--danger); background:#fef2f2; }
+  
+  .reading-list { display:grid; gap:10px; }
+  .reading-list-item { padding:14px; border:1px solid var(--border); border-radius:12px; cursor:pointer; transition:all 0.2s; background:var(--card); }
+  .reading-list-item:hover { border-color:var(--primary); background:#f8faff; }
+  .reading-list-item .rli-title { font-weight:700; font-size:0.95rem; margin-bottom:4px; }
+  .reading-list-item .rli-meta { font-size:0.75rem; color:var(--text-secondary); }
+  .reading-list-item .rli-cat { display:inline-block; font-size:0.7rem; padding:2px 8px; border-radius:6px; background:#eef2ff; color:var(--primary); margin-right:6px; }
+  
   /* ========== 管理后台 ========== */
   .admin-overview { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px; }
   .admin-stat { text-align:center; padding:14px 8px; border-radius:12px; background:linear-gradient(135deg,#eef2ff,#e0e7ff); border:1px solid #c7d2fe; }
@@ -562,6 +610,7 @@
   <button class="tab-btn" data-tab="listening"><span class="icon">🎧</span>听力</button>
   <button class="tab-btn" data-tab="writing"><span class="icon">✍️</span>写作</button>
   <button class="tab-btn" data-tab="dictation"><span class="icon">🔤</span>默写</button>
+  <button class="tab-btn" data-tab="reading"><span class="icon">📰</span>文章</button>
   <button class="tab-btn" data-tab="progress"><span class="icon">📊</span>进度</button>
   <button class="tab-btn" data-tab="admin" id="adminTabBtn" style="display:none;"><span class="icon">👑</span>管理</button>
 </div>
@@ -911,6 +960,27 @@
   <div class="card">
     <div class="card-title">🏆 成就</div>
     <div id="achievements"></div>
+  </div>
+</div>
+
+<!-- ==================== 每日文章 ==================== -->
+<div class="tab-content" id="tab-reading">
+  <div class="reading-header">
+    <div>
+      <div style="font-weight:800;font-size:1.1rem;">📰 每日英语文章</div>
+      <div class="reading-date" id="readingDate"></div>
+    </div>
+    <div class="reading-nav">
+      <button class="btn btn-outline" onclick="prevArticle()">◀ 上一篇</button>
+      <button class="btn btn-outline" onclick="nextArticle()">下一篇 ▶</button>
+    </div>
+  </div>
+  
+  <div id="readingContent"></div>
+  
+  <div class="card">
+    <div class="card-title">📚 文章列表</div>
+    <div class="reading-list" id="readingList"></div>
   </div>
 </div>
 
@@ -6120,7 +6190,383 @@ const GRAMMAR_DB = {
   ]
 };
 
-// 听力材料
+// 每日文章数据库
+const READING_DB = [
+  {
+    title: "The Power of Habit",
+    category: "Self-improvement",
+    difficulty: "Intermediate",
+    wordCount: 280,
+    date: "2024-01-01",
+    vocab: [
+      { word:"habit", meaning:"n. 习惯" },
+      { word:"conscious", meaning:"adj. 有意识的" },
+      { word:"automatic", meaning:"adj. 自动的" },
+      { word:"cue", meaning:"n. 提示；线索" },
+      { word:"routine", meaning:"n. 常规" },
+      { word:"reward", meaning:"n. 奖励" },
+    ],
+    translation: "习惯的力量。我们日常生活中约有40%的行为不是由决定驱动的，而是由习惯驱动的。查尔斯·杜希格解释了习惯回路：提示→常规→奖励。当我们理解了这个回路，就能改变习惯。关键在于：你无法真正消除一个坏习惯，你只能用新的习惯去替代它。",
+    quiz: [
+      { q:"What percentage of daily behaviors are driven by habit?", options:["20%","40%","60%","80%"], answer:1 },
+      { q:"What is the correct habit loop?", options:["Cue→Reward→Routine","Routine→Cue→Reward","Cue→Routine→Reward","Reward→Cue→Routine"], answer:2 },
+    ],
+    body: `<p>Have you ever wondered why we do the things we do every day? Research suggests that about <span class="vocab-word">40%</span> of our daily behaviors are not driven by conscious decisions, but by <span class="vocab-word">habit</span>.</p>
+    <p>Charles Duhigg, in his book "The Power of Habit," explains that every <span class="vocab-word">habit</span> follows a three-step loop: the <span class="vocab-word">cue</span>, the <span class="vocab-word">routine</span>, and the <span class="vocab-word">reward</span>. The cue triggers the behavior, the routine is the behavior itself, and the reward is how your brain learns to remember this pattern for the future.</p>
+    <p>The fascinating part is that once a habit is formed, it becomes <span class="vocab-word">automatic</span>. Your brain stops fully participating in decision-making. This is why habits are so powerful — and so hard to break.</p>
+    <p>However, Duhigg argues that you cannot truly eliminate a bad habit. Instead, you must replace it with a new one. Keep the same cue and reward, but change the routine. This is the golden rule of habit change.</p>`
+  },
+  {
+    title: "Why We Need to Fail",
+    category: "Psychology",
+    difficulty: "Intermediate",
+    wordCount: 260,
+    date: "2024-01-02",
+    vocab: [
+      { word:"failure", meaning:"n. 失败" },
+      { word:"resilience", meaning:"n. 韧性" },
+      { word:"embrace", meaning:"v. 拥抱" },
+      { word:"growth", meaning:"n. 成长" },
+      { word:"perspective", meaning:"n. 视角" },
+      { word:"inevitable", meaning:"adj. 不可避免的" },
+    ],
+    translation: "为什么我们需要失败。失败是生活中不可避免的一部分，但很多人害怕它。实际上，失败是成长的催化剂。每一次失败都教会我们什么行不通，让我们离成功更近一步。关键是要有韧性——从失败中恢复并继续前进的能力。",
+    quiz: [
+      { q:"According to the article, failure is...", options:["something to avoid","inevitable","always bad","a sign of weakness"], answer:1 },
+      { q:"What is resilience?", options:["Giving up easily","Recovering from failure","Being perfect","Avoiding challenges"], answer:1 },
+    ],
+    body: `<p>Failure is <span class="vocab-word">inevitable</span>. Yet, many of us spend our lives trying to avoid it. We fear failure so much that we often choose not to try at all. But what if failure is actually the key to success?</p>
+    <p>Research shows that people who <span class="vocab-word">embrace</span> failure as a learning opportunity are more likely to succeed in the long run. Each failure teaches us what doesn't work, bringing us one step closer to what does.</p>
+    <p>The secret lies in <span class="vocab-word">resilience</span> — the ability to bounce back from setbacks. Resilient people don't see failure as a dead end. They see it as a detour on the road to <span class="vocab-word">growth</span>.</p>
+    <p>So next time you fail, remember: it's not the end. It's feedback. Adjust your <span class="vocab-word">perspective</span>, learn from it, and try again. That's how progress happens.</p>`
+  },
+  {
+    title: "The Science of Sleep",
+    category: "Science",
+    difficulty: "Advanced",
+    wordCount: 300,
+    date: "2024-01-03",
+    vocab: [
+      { word:"crucial", meaning:"adj. 关键的" },
+      { word:"cognitive", meaning:"adj. 认知的" },
+      { word:"consolidate", meaning:"v. 巩固" },
+      { word:"deprivation", meaning:"n. 剥夺" },
+      { word:"immune", meaning:"adj. 免疫的" },
+      { word:"chronic", meaning:"adj. 慢性的" },
+    ],
+    translation: "睡眠的科学。睡眠不仅仅是休息，它对大脑和身体至关重要。睡眠帮助我们巩固记忆、修复组织、调节免疫系统和维持认知功能。长期睡眠不足会导致注意力下降、情绪波动和健康问题。成年人每晚需要7-9小时的优质睡眠。",
+    quiz: [
+      { q:"How many hours of sleep do adults need?", options:["3-5 hours","5-6 hours","7-9 hours","10-12 hours"], answer:2 },
+      { q:"What does sleep help with?", options:["Nothing important","Memory consolidation only","Memory, tissue repair, and immune function","Only physical rest"], answer:2 },
+    ],
+    body: `<p>Sleep is not just a passive state of rest. It is a <span class="vocab-word">crucial</span> biological process that affects nearly every system in our body. During sleep, your brain <span class="vocab-word">consolidate</span>s memories, processes information, and prepares for the next day.</p>
+    <p>Sleep <span class="vocab-word">deprivation</span> has become a modern epidemic. Studies show that lack of sleep impairs <span class="vocab-word">cognitive</span> function, weakens the <span class="vocab-word">immune</span> system, and increases the risk of <span class="vocab-word">chronic</span> diseases such as diabetes and heart disease.</p>
+    <p>Most adults need seven to nine hours of quality sleep per night. Yet, in our fast-paced world, many people sacrifice sleep for work or entertainment. This is a dangerous trade-off.</p>
+    <p>To improve your sleep: maintain a regular schedule, avoid screens before bedtime, and create a dark, quiet sleeping environment. Your brain and body will thank you.</p>`
+  },
+  {
+    title: "The Art of Listening",
+    category: "Communication",
+    difficulty: "Intermediate",
+    wordCount: 250,
+    date: "2024-01-04",
+    vocab: [
+      { word:"genuine", meaning:"adj. 真诚的" },
+      { word:"interrupt", meaning:"v. 打断" },
+      { word:"perspective", meaning:"n. 视角" },
+      { word:"empathy", meaning:"n. 共情" },
+      { word:"attentive", meaning:"adj. 专注的" },
+      { word:"validate", meaning:"v. 认可" },
+    ],
+    translation: "倾听的艺术。真正的倾听是一种稀缺技能。大多数人不是在倾听，而是在等待说话的机会。真诚的倾听意味着放下自己的判断，完全专注于对方。它需要共情和耐心。当你真正倾听别人时，你不仅理解了他们的观点，还让他们感到被重视。",
+    quiz: [
+      { q:"What do most people do instead of listening?", options:["Listen carefully","Wait to speak","Take notes","Ask questions"], answer:1 },
+      { q:"Genuine listening requires...", options:["Judgment and advice","Empathy and patience","Interrupting often","Thinking about what to say"], answer:1 },
+    ],
+    body: `<p>In our fast-paced world, true listening has become a rare skill. Most people don't listen with the intent to understand; they listen with the intent to reply. They are simply waiting for their turn to speak.</p>
+    <p><span class="vocab-word">Genuine</span> listening means setting aside your own thoughts and judgments. It means being fully <span class="vocab-word">attentive</span> to the other person. It requires <span class="vocab-word">empathy</span> — the ability to see the world from their <span class="vocab-word">perspective</span>.</p>
+    <p>When you listen deeply, you don't just hear words. You hear emotions, needs, and fears. You <span class="vocab-word">validate</span> the other person's experience simply by being present.</p>
+    <p>Here's a challenge: in your next conversation, try not to <span class="vocab-word">interrupt</span>. Just listen. You might be surprised by what you learn.</p>`
+  },
+  {
+    title: "Climate Change: What Can We Do?",
+    category: "Environment",
+    difficulty: "Advanced",
+    wordCount: 290,
+    date: "2024-01-05",
+    vocab: [
+      { word:"sustainable", meaning:"adj. 可持续的" },
+      { word:"emission", meaning:"n. 排放" },
+      { word:"renewable", meaning:"adj. 可再生的" },
+      { word:"consumption", meaning:"n. 消费" },
+      { word:"individual", meaning:"n./adj. 个人(的)" },
+      { word:"collective", meaning:"adj. 集体的" },
+    ],
+    translation: "气候变化：我们能做什么？气候变化是当今最大的挑战之一。虽然政府和企业需要采取大规模行动，但个人的日常选择也很重要。减少能源消耗、选择可持续产品、支持可再生能源——每个人的小小行动汇聚起来就能产生巨大影响。",
+    quiz: [
+      { q:"What kind of energy should we support?", options:["Fossil fuels","Coal","Renewable energy","None"], answer:2 },
+      { q:"Who needs to take action on climate change?", options:["Only governments","Only individuals","Both governments and individuals","Nobody"], answer:2 },
+    ],
+    body: `<p>Climate change is one of the most pressing challenges of our time. Rising temperatures, extreme weather, and melting ice caps are all signs that our planet is in trouble.</p>
+    <p>While governments and corporations must take large-scale action, <span class="vocab-word">individual</span> choices also matter. Every day, we make decisions that affect the environment — from what we eat to how we travel.</p>
+    <p>Reducing <span class="vocab-word">consumption</span>, choosing <span class="vocab-word">sustainable</span> products, and supporting <span class="vocab-word">renewable</span> energy are all steps in the right direction. Cutting carbon <span class="vocab-word">emission</span>s requires both <span class="vocab-word">collective</span> action and personal commitment.</p>
+    <p>The good news? Small actions, when multiplied by millions of people, can create enormous impact. The time to act is now — not tomorrow, not next year, but today.</p>`
+  },
+  {
+    title: "The Happiness Equation",
+    category: "Psychology",
+    difficulty: "Intermediate",
+    wordCount: 270,
+    date: "2024-01-06",
+    vocab: [
+      { word:"happiness", meaning:"n. 幸福" },
+      { word:"content", meaning:"adj. 满足的" },
+      { word:"gratitude", meaning:"n. 感恩" },
+      { word:"comparison", meaning:"n. 比较" },
+      { word:"purpose", meaning:"n. 目标" },
+      { word:"fulfill", meaning:"v. 实现" },
+    ],
+    translation: "幸福的等式。幸福不是拥有更多，而是欣赏已有的。研究表明，感恩比比较更能带来幸福感。有明确人生目标的人也更快乐。幸福不是一个终点，而是一种持续的过程——选择专注于当下、感恩和意义。",
+    quiz: [
+      { q:"What brings more happiness than comparison?", options:["Money","Gratitude","Fame","Power"], answer:1 },
+      { q:"Happiness is...", options:["A destination","Having everything","A continuous process","Being the best"], answer:2 },
+    ],
+    body: `<p>We often think that happiness comes from having more — more money, more success, more <span class="vocab-word">comparison</span> with others. But research tells a different story.</p>
+    <p>Studies show that <span class="vocab-word">gratitude</span> is a stronger predictor of <span class="vocab-word">happiness</span> than income or achievement. People who regularly practice gratitude report feeling more <span class="vocab-word">content</span> with their lives.</p>
+    <p>Another key factor is having a sense of <span class="vocab-word">purpose</span>. When we feel that our lives have meaning — whether through work, relationships, or service to others — we are more likely to experience deep, lasting happiness.</p>
+    <p>The truth is, happiness is not a destination you arrive at. It's a way of traveling. You don't <span class="vocab-word">fulfill</span> your life and then become happy. You choose happiness, and that choice gives your life meaning.</p>`
+  },
+  {
+    title: "Artificial Intelligence: Friend or Foe?",
+    category: "Technology",
+    difficulty: "Advanced",
+    wordCount: 310,
+    date: "2024-01-07",
+    vocab: [
+      { word:"artificial", meaning:"adj. 人工的" },
+      { word:"intelligence", meaning:"n. 智能" },
+      { word:"revolution", meaning:"n. 革命" },
+      { word:"replace", meaning:"v. 取代" },
+      { word:"collaborate", meaning:"v. 合作" },
+      { word:"ethical", meaning:"adj. 伦理的" },
+    ],
+    translation: "人工智能：朋友还是敌人？AI正在改变世界。有人担心AI会取代人类工作，有人则期待AI成为强大的合作伙伴。关键在于我们如何使用它。与其害怕被取代，不如学会与AI协作。同时，我们必须认真思考AI带来的伦理问题。",
+    quiz: [
+      { q:"What should we do instead of fearing AI?", options:["Ignore it","Ban it","Learn to collaborate with it","Destroy it"], answer:2 },
+      { q:"What issues does AI raise?", options:["Only technical issues","Only economic issues","Ethical issues","No issues"], answer:2 },
+    ],
+    body: `<p>Artificial Intelligence (<span class="vocab-word">artificial</span> <span class="vocab-word">intelligence</span>) is transforming every aspect of our lives. From healthcare to education, from transportation to entertainment, AI is reshaping how we live and work.</p>
+    <p>Some fear that AI will <span class="vocab-word">replace</span> human workers. Others see it as a powerful tool that can help us solve complex problems. The truth likely lies somewhere in between.</p>
+    <p>Rather than fearing <span class="vocab-word">revolution</span>, we should learn to <span class="vocab-word">collaborate</span> with AI. Machines are good at processing vast amounts of data, while humans excel at creativity, empathy, and moral judgment. Together, we can achieve more than either could alone.</p>
+    <p>However, we must also address the <span class="vocab-word">ethical</span> challenges. Who is responsible when AI makes a mistake? How do we prevent bias in algorithms? These are questions we cannot afford to ignore.</p>`
+  },
+  {
+    title: "The Benefits of Reading",
+    category: "Education",
+    difficulty: "Beginner",
+    wordCount: 220,
+    date: "2024-01-08",
+    vocab: [
+      { word:"benefit", meaning:"n. 益处" },
+      { word:"imagination", meaning:"n. 想象力" },
+      { word:"vocabulary", meaning:"n. 词汇量" },
+      { word:"concentration", meaning:"n. 专注" },
+      { word:"relax", meaning:"v. 放松" },
+      { word:"knowledge", meaning:"n. 知识" },
+    ],
+    translation: "阅读的益处。阅读不仅增长知识，还能提高想象力、扩大词汇量、增强专注力。每天阅读30分钟可以显著改善大脑功能，同时帮助你放松减压。无论你喜欢小说还是非小说，阅读都是终身学习的最佳方式。",
+    quiz: [
+      { q:"How long should you read daily?", options:["5 minutes","30 minutes","2 hours","All day"], answer:1 },
+      { q:"Reading can improve all EXCEPT...", options:["Vocabulary","Concentration","Weight","Imagination"], answer:2 },
+    ],
+    body: `<p>Reading is one of the best habits you can develop. The <span class="vocab-word">benefit</span>s of reading go far beyond simply gaining <span class="vocab-word">knowledge</span>.</p>
+    <p>First, reading improves your <span class="vocab-word">vocabulary</span>. Every new word you encounter expands your ability to express yourself. Second, it strengthens <span class="vocab-word">concentration</span> — in a world of short attention spans, reading trains your brain to focus.</p>
+    <p>Reading also stimulates <span class="vocab-word">imagination</span>. When you read a story, your brain creates images and emotions that no movie can replicate. And perhaps most importantly, reading helps you <span class="vocab-word">relax</span>. Just thirty minutes a day can reduce stress by up to 68%.</p>
+    <p>So pick up a book today. Your brain will thank you.</p>`
+  },
+  {
+    title: "The Growth Mindset",
+    category: "Self-improvement",
+    difficulty: "Intermediate",
+    wordCount: 260,
+    date: "2024-01-09",
+    vocab: [
+      { word:"mindset", meaning:"n. 思维模式" },
+      { word:"ability", meaning:"n. 能力" },
+      { word:"effort", meaning:"n. 努力" },
+      { word:"challenge", meaning:"n. 挑战" },
+      { word:"improve", meaning:"v. 提升" },
+      { word:"potential", meaning:"n. 潜力" },
+    ],
+    translation: "成长型思维。斯坦福心理学家卡罗尔·德韦克发现了两种思维模式：固定型思维和成长型思维。固定型思维认为能力是天生的，成长型思维认为能力可以通过努力提升。拥有成长型思维的人更愿意接受挑战，因为他们把失败看作学习的机会。",
+    quiz: [
+      { q:"Who discovered the growth mindset?", options:["Charles Duhigg","Carol Dweck","Albert Einstein","Steve Jobs"], answer:1 },
+      { q:"Growth mindset believers think ability comes from...", options:["Natural talent only","Effort and learning","Luck","Genetics only"], answer:1 },
+    ],
+    body: `<p>Stanford psychologist Carol Dweck discovered that people generally have one of two <span class="vocab-word">mindset</span>s: fixed or growth.</p>
+    <p>People with a fixed <span class="vocab-word">mindset</span> believe that <span class="vocab-word">ability</span> is innate — you're either born smart or you're not. They avoid <span class="vocab-word">challenge</span>s because failure would prove they're not good enough.</p>
+    <p>People with a growth mindset believe that abilities can be developed through <span class="vocab-word">effort</span> and learning. They embrace challenges because they see them as opportunities to <span class="vocab-word">improve</span>.</p>
+    <p>The good news? You can change your mindset. Start by replacing "I can't do this" with "I can't do this yet." That one word — yet — unlocks your <span class="vocab-word">potential</span>.</p>`
+  },
+  {
+    title: "Why Travel Changes You",
+    category: "Culture",
+    difficulty: "Intermediate",
+    wordCount: 250,
+    date: "2024-01-10",
+    vocab: [
+      { word:"travel", meaning:"v./n. 旅行" },
+      { word:"perspective", meaning:"n. 视角" },
+      { word:"culture", meaning:"n. 文化" },
+      { word:"comfort", meaning:"n. 舒适" },
+      { word:"adapt", meaning:"v. 适应" },
+      { word:"transform", meaning:"v. 改变" },
+    ],
+    translation: "旅行如何改变你。旅行不仅是看风景，更是改变视角的方式。走出舒适区，体验不同文化，让你对世界有更深的理解。旅行教会你适应、包容和感恩。每一次旅行都是一次自我成长的机会。",
+    quiz: [
+      { q:"What does travel help you step out of?", options:["Your comfort zone","Your house","Your country","Your job"], answer:0 },
+      { q:"Travel teaches you to...", options:["Be afraid","Adapt and be tolerant","Stay the same","Avoid new things"], answer:1 },
+    ],
+    body: `<p>Travel is more than just visiting new places. It has the power to <span class="vocab-word">transform</span> how you see the world — and yourself.</p>
+    <p>When you step out of your <span class="vocab-word">comfort</span> zone and experience a different <span class="vocab-word">culture</span>, you gain a new <span class="vocab-word">perspective</span>. You realize that your way of life is not the only way. This builds empathy and open-mindedness.</p>
+    <p>Travel also teaches you to <span class="vocab-word">adapt</span>. When you navigate unfamiliar streets, try new foods, and communicate in a foreign language, you build confidence and resilience.</p>
+    <p>But perhaps the greatest gift of <span class="vocab-word">travel</span> is gratitude. Seeing how others live makes you appreciate what you have. It reminds you that despite our differences, we share the same hopes and dreams.</p>`
+  },
+];
+
+// 文章模块状态
+let readingState = {
+  currentIndex: 0,
+  showTranslation: false,
+  showVocab: false,
+  showQuiz: false,
+  quizAnswers: {},
+};
+
+function renderReading() {
+  const idx = readingState.currentIndex;
+  const article = READING_DB[idx];
+  if (!article) return;
+  
+  // 按日期选择今日文章
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(),0,0)) / 86400000);
+  if (readingState.currentIndex === 0 && !readingState.userNavigated) {
+    readingState.currentIndex = dayOfYear % READING_DB.length;
+  }
+  
+  const a = READING_DB[readingState.currentIndex];
+  
+  document.getElementById('readingDate').textContent = `第 ${readingState.currentIndex + 1} / ${READING_DB.length} 篇 · ${a.difficulty} · ${a.wordCount}词`;
+  
+  document.getElementById('readingContent').innerHTML = `
+    <div class="reading-article">
+      <span class="reading-category">${a.category}</span>
+      <div class="reading-title">${a.title}</div>
+      <div class="reading-meta">难度: ${a.difficulty} | 词数: ${a.wordCount}</div>
+      
+      <div class="reading-toolbar">
+        <button class="btn ${readingState.showTranslation ? 'active' : 'btn-outline'}" onclick="toggleReading('translation')">📖 中文翻译</button>
+        <button class="btn ${readingState.showVocab ? 'active' : 'btn-outline'}" onclick="toggleReading('vocab')">📝 核心词汇</button>
+        <button class="btn ${readingState.showQuiz ? 'active' : 'btn-outline'}" onclick="toggleReading('quiz')">❓ 阅读理解</button>
+        <button class="btn btn-primary" onclick="speakArticle()">🔊 朗读全文</button>
+      </div>
+      
+      <div class="reading-body" id="readingBody">${a.body}</div>
+      
+      <div class="reading-translation ${readingState.showTranslation ? 'show' : ''}" id="readingTranslation">
+        <b>中文翻译：</b><br>${a.translation}
+      </div>
+      
+      <div class="reading-vocab ${readingState.showVocab ? 'show' : ''}" id="readingVocab">
+        <div class="reading-vocab-title">📝 核心词汇 (${a.vocab.length}词)</div>
+        ${a.vocab.map(v => `<div class="reading-vocab-item"><span class="rv-word">${v.word}</span> <span class="rv-meaning">${v.meaning}</span></div>`).join('')}
+      </div>
+      
+      <div class="reading-quiz ${readingState.showQuiz ? 'show' : ''}" id="readingQuiz">
+        <div class="reading-quiz-title">❓ 阅读理解</div>
+        ${a.quiz.map((q, qi) => `
+          <div class="reading-quiz-q">
+            <div class="reading-quiz-q-text">${qi+1}. ${q.q}</div>
+            <ul class="reading-quiz-options" id="quizOptions_${qi}">
+              ${q.options.map((opt, oi) => `<li onclick="answerQuiz(${qi}, ${oi}, ${q.answer})">${String.fromCharCode(65+oi)}. ${opt}</li>`).join('')}
+            </ul>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  
+  // 给词汇标注加点击事件
+  document.querySelectorAll('.vocab-word').forEach(el => {
+    el.addEventListener('click', () => speakWordText(el.textContent.replace('%','')));
+  });
+  
+  renderReadingList();
+}
+
+function renderReadingList() {
+  document.getElementById('readingList').innerHTML = READING_DB.map((a, i) => `
+    <div class="reading-list-item" onclick="goToArticle(${i})">
+      <div class="rli-title">${a.title}</div>
+      <div class="rli-meta">
+        <span class="rli-cat">${a.category}</span>
+        ${a.difficulty} · ${a.wordCount}词
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleReading(type) {
+  if (type === 'translation') readingState.showTranslation = !readingState.showTranslation;
+  if (type === 'vocab') readingState.showVocab = !readingState.showVocab;
+  if (type === 'quiz') readingState.showQuiz = !readingState.showQuiz;
+  renderReading();
+}
+
+function prevArticle() {
+  readingState.userNavigated = true;
+  readingState.currentIndex = (readingState.currentIndex - 1 + READING_DB.length) % READING_DB.length;
+  readingState.showTranslation = false;
+  readingState.showVocab = false;
+  readingState.showQuiz = false;
+  renderReading();
+}
+
+function nextArticle() {
+  readingState.userNavigated = true;
+  readingState.currentIndex = (readingState.currentIndex + 1) % READING_DB.length;
+  readingState.showTranslation = false;
+  readingState.showVocab = false;
+  readingState.showQuiz = false;
+  renderReading();
+}
+
+function goToArticle(idx) {
+  readingState.userNavigated = true;
+  readingState.currentIndex = idx;
+  readingState.showTranslation = false;
+  readingState.showVocab = false;
+  readingState.showQuiz = false;
+  renderReading();
+}
+
+function speakArticle() {
+  const body = document.getElementById('readingBody');
+  if (!body) return;
+  const text = body.textContent.replace(/\s+/g, ' ').trim();
+  if (text) speakWordText(text.slice(0, 200)); // 限制长度避免过长
+}
+
+function answerQuiz(qi, oi, answer) {
+  const options = document.querySelectorAll(`#quizOptions_${qi} li`);
+  options.forEach((opt, i) => {
+    opt.style.pointerEvents = 'none';
+    if (i === answer) opt.classList.add('correct');
+    else if (i === oi && oi !== answer) opt.classList.add('wrong');
+  });
+}
+
+
 const LISTENING_DB = [
   { title:"日常对话 — 问路", text:"Excuse me, could you tell me how to get to the nearest subway station? Sure, go straight down this road for two blocks, then turn left at the traffic lights. You'll see it on your right. It's about a five-minute walk. Thank you very much! You're welcome.", level:"初级", speed:0.9 },
   { title:"商务场景 — 会议讨论", text:"Good morning everyone. Let's get started with today's agenda. First, we need to review the sales figures from last quarter. As you can see from the chart, our revenue increased by fifteen percent compared to the same period last year. However, we still face challenges in the Asian market. Any questions so far?", level:"中级", speed:1.0 },
@@ -6545,6 +6991,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     if (btn.dataset.tab === 'progress') renderProgress();
     if (btn.dataset.tab === 'vocab') renderWordList();
     if (btn.dataset.tab === 'plan') renderPlan();
+    if (btn.dataset.tab === 'reading') renderReading();
     if (btn.dataset.tab === 'admin') renderAdmin();
     if (btn.dataset.tab === 'dictation') { /* 默写模块按需渲染 */ }
   });
@@ -8006,6 +8453,7 @@ function initApp() {
   loadGrammarQuestion();
   renderListening();
   renderWriting();
+  renderReading();
   
   // 管理员显示管理Tab
   if (currentUser?.isAdmin) {
@@ -8017,7 +8465,7 @@ function initApp() {
   
   // 处理 PWA 快捷方式的 hash 路由
   const hash = window.location.hash.replace('#', '');
-  const validTabs = ['home', 'plan', 'vocab', 'grammar', 'listening', 'writing', 'dictation', 'progress', 'admin'];
+  const validTabs = ['home', 'plan', 'vocab', 'grammar', 'listening', 'writing', 'dictation', 'reading', 'progress', 'admin'];
   if (hash && validTabs.includes(hash)) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
